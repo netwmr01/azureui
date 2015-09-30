@@ -192,6 +192,20 @@
                 },
                 "bladeTitle": "User information",
                 "elements": [
+                     {
+                        "name": "company",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Company",
+                        "toolTip": "Provide the company you are with",
+                        "constraints": {
+                            "required": true,
+                            "regex": "",
+                            "validationMessage": ""
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        }
+                    },
                     {
                         "name": "emailAddress",
                         "type": "Microsoft.Common.TextBox",
