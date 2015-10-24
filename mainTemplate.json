@@ -131,6 +131,9 @@
     "jobRole": {
       "type": "string",
       "defaultValue": "Administrator",
+      "metadata": {
+        "description": "Job Role"
+      },
       "allowedValues": [
         "Administrator",
         "Analyst (Industry/Finance)",
@@ -151,6 +154,9 @@
     "jobFunction": {
       "type": "string",
       "defaultValue": "Analytics / Business Intelligence",
+      "metadata": {
+        "description": "Job Function"
+      },
       "allowedValues": [
         "Analytics / Business Intelligence",
         "Big Data / Architecture",
@@ -176,6 +182,7 @@
     }
   },
   "variables": {
+    "installCDH":"True",
     "addressPrefix":"10.0.0.0/24",
     "subnetPrefix":"10.0.0.0/24",
     "nodeAddressPrefix":"10.0.0.",
@@ -384,6 +391,9 @@
           },
           "jobFunction": {
             "value": "[parameters('jobFunction')]"
+          },
+          "installCDH": {
+            "value": "[variables('installCDH')]"
           }
         }
       }

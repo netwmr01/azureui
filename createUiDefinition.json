@@ -10,7 +10,7 @@
                 "toolTip": "The name of the CDH cluster, also serves as the prefix for DNS names and Storage Account names for the nodes, must be unique.",
                 "constraints": {
                     "required": true,
-                    "regex": "^[a-z0-9A-Z]{1,30}$",
+                    "regex": "^[a-z0-9]{1,30}$",
                     "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
                 }
             },
