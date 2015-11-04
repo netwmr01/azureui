@@ -40,9 +40,8 @@
         "description": "Unique public dns name where the Virtual Machines will be exposed"
       }
     },
-    "region": {
+    "location": {
       "type": "string",
-      "defaultValue": "japanwest",
       "metadata": {
         "description": "Location where resources will be provisioned"
       }
@@ -56,7 +55,6 @@
     },
     "virtualNetworkName": {
       "type": "string",
-      "defaultValue": "clouderavnet",
       "metadata": {
         "description": "The name of the virtual network provisioned for the deployment"
       }
@@ -232,8 +230,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "region": {
-            "value": "[parameters('region')]"
+          "location": {
+            "value": "[parameters('location')]"
           },
           "networkSpec": {
             "value": "[variables('networkSpec')]"
@@ -264,8 +262,8 @@
           "dnsNamePrefix": {
             "value": "[parameters('dnsNamePrefix')]"
           },
-          "region": {
-            "value": "[parameters('region')]"
+          "location": {
+            "value": "[parameters('location')]"
           },
           "scriptsUri": {
             "value": "[variables('scriptsUri')]"
@@ -305,8 +303,8 @@
           "dnsNamePrefix": {
             "value": "[parameters('dnsNamePrefix')]"
           },
-          "region": {
-            "value": "[parameters('region')]"
+          "location": {
+            "value": "[parameters('location')]"
           },
           "scriptsUri": {
             "value": "[variables('scriptsUri')]"
@@ -347,8 +345,8 @@
           "dnsNamePrefix": {
             "value": "[parameters('dnsNamePrefix')]"
           },
-          "region": {
-            "value": "[parameters('region')]"
+          "location": {
+            "value": "[parameters('location')]"
           },
           "scriptsUri": {
             "value": "[variables('scriptsUri')]"

@@ -55,7 +55,7 @@
                         "name": "clusterVmSize",
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Virtual machine size",
-                        "toolTip": "The size of virtual machine to provision for each node. Choose a region that currently supports premium storage: East US2, West US, West Europe, Southeast Asia, Japan East and West, Australia East.",
+                        "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US2, West US, West Europe, Southeast Asia, Japan East and West, Australia East.",
                         "osPlatform": "Linux",
                         "recommendedSizes": [
                             "Standard_DS14",
@@ -321,7 +321,7 @@
             "subnetName":"[steps('infraInfo').subnetName]",
             "adminUserName": "[basics('username')]",
             "adminPassword": "[basics('password')]",
-            "region": "[location()]",
+            "location": "[location()]",
             "tshirtSize": "[steps('clouderaSetupInformation').clusterType]",
             "numberOfDataNodes": "[steps('clouderaSetupInformation').datanodeCount]",
             "cmUserName": "[steps('clouderaSetupInformation').cmUsername]",
