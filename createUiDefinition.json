@@ -55,7 +55,8 @@
                         "name": "clusterVmSize",
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Virtual machine size",
-                        "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US2, West US, West Europe, Southeast Asia, Japan East and West, Australia East.",
+                        "defaultValue": "Standard_DS14",
+                        "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US, East US2, Central US, West US, West Europe, North Europe, Southeast Asia, Japan East, Japan West, Australia East.",
                         "osPlatform": "Linux",
                         "recommendedSizes": [
                             "Standard_DS14",
