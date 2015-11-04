@@ -11,7 +11,7 @@
                 "constraints": {
                     "required": true,
                     "regex": "^[a-z0-9]{1,30}$",
-                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-30 characters long."
+                    "validationMessage": "Only small case alphanumeric characters are allowed, and the value must be 1-30 characters long."
                 }
             },
             {
@@ -133,7 +133,7 @@
                         "type": "Microsoft.Common.DropDown",
                         "label": "Cluster Type",
                         "defaultValue": "POC",
-                        "toolTip": "Choose Production for High Availability deployments",
+                        "toolTip": "Choose Production for High Availability deployments, Choose POC for one master deployments ",
                         "constraints": {
                             "required": true,
                             "allowedValues": [
