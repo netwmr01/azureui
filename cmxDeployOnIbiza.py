@@ -48,7 +48,6 @@ def setZookeeperOwnerDir(HA):
         client.connect(toconnect, username=cmx.ssh_root_user, password=cmx.ssh_root_password)
         client.exec_command("sudo chown zookeeper:zookeeper "+LOG_DIR+"/zookeeper")
 
-
 def init_cluster():
     """
     Initialise Cluster
