@@ -4,17 +4,6 @@
     "parameters": {
         "basics": [
             {
-                "name": "clusterName",
-                "type": "Microsoft.Common.TextBox",
-                "label": "Cluster name",
-                "toolTip": "The name of the CDH cluster, also serves as the prefix for DNS names and Storage Account names for the nodes, must be unique.",
-                "constraints": {
-                    "required": true,
-                    "regex": "^[a-z0-9]{1,30}$",
-                    "validationMessage": "Only small case alphanumeric characters are allowed, and the value must be 1-30 characters long."
-                }
-            },
-            {
                 "name": "username",
                 "type": "Microsoft.Compute.UserNameTextBox",
                 "label": "Username",
@@ -51,6 +40,52 @@
                 "bladeTitle": "Infrastructure information",
                 "elements":
                 [
+                    {
+                        "name": "DNSPrefix",
+                        "type": "Microsoft.Network.PublicIpAddressCombo",
+                        "label": {
+                            "publicIpAddress": "Resource name for this IP prefix",
+                            "domainNameLabel": "Domain name prefix and cluster name for CDH"
+                        },
+                        "toolTip": {
+                            "publicIpAddress": "Only new public IP is currently supported",
+                            "domainNameLabel": "Cloudera Manager will be accessible from port 7180 of this domain"
+                        },
+                        "defaultValue": {
+                            "publicIpAddressName": "cdhpip",
+                            "domainNameLabel": "change_me_to_be_unique"
+                        },
+                        "constraints": {
+                            "required": true
+                        },
+                        "options": {
+                            "hideNone": true,
+                            "hideDomainNameLabel": false
+                        }
+                    },
+                    {
+                        "name": "storageAccount",
+                        "type": "Microsoft.Storage.MultiStorageAccountCombo",
+                        "label": {
+                            "prefix": "Storage account prefix",
+                            "type": "Storage account type"
+                        },
+                        "toolTip": {
+                            "prefix": "Storage account prefix the CDH VMs, only new storage account is supported",
+                            "type": "Only Premium Storage"
+                        },
+                        "defaultValue": {
+                            "prefix": "change_me_to_be_unique",
+                            "type": "Premium_LRS"
+                        },
+                        "constraints": {
+                            "allowedTypes": [
+                                "Premium_LRS"
+                            ],
+                            "count": 10,
+                            "required": true
+                        }
+                    },
                     {
                         "name": "clusterVmSize",
                         "type": "Microsoft.Compute.SizeSelector",
@@ -316,8 +351,8 @@
             }
         ],
         "outputs": {
-            "storageAccountPrefix": "[basics('clusterName')]",
-            "dnsNamePrefix": "[basics('clusterName')]",
+            "storageAccountPrefix": "[steps('infraInfo').storageAccount.prefix]",
+            "dnsNamePrefix": "[steps('infraInfo').DNSPrefix.domainNameLabel]",
             "virtualNetworkName":"[steps('infraInfo').virtualNetworkName]",
             "subnetName":"[steps('infraInfo').subnetName]",
             "adminUserName": "[basics('username')]",
