@@ -148,6 +148,7 @@
                         "name": "nodeAddressPrefix",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Node Address Prefix",
+                        "defaultValue": "10.1.0.",
                         "toolTip": "Prefix for all VM IP addresses (NOT a CIDR)",
                         "constraints": {
                             "regex":"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}$",
