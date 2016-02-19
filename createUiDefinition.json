@@ -150,7 +150,7 @@
                         "label": "Node Address Prefix",
                         "toolTip": "Prefix for all VM IP addresses (NOT a CIDR)",
                         "constraints": {
-
+                            "regex":"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
                             "required": true
                         }
                     },
@@ -160,7 +160,7 @@
                         "label": "Master Node Address Start",
                         "toolTip": "IP suffix for first master node",
                         "constraints": {
-
+                            "regex":"^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
                             "required": true
                         }
                     },
@@ -170,7 +170,7 @@
                         "label": "Data Node Address Start",
                         "toolTip": "IP suffix for first data node",
                         "constraints": {
-                            
+                            "regex":"^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
                             "required": true
                         }
                     }
