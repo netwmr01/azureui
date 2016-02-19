@@ -123,15 +123,15 @@
       }
     },
     "masterNodeAddressStart": {
-      "type": "int",
-      "defaultValue": 10,
+      "type": "string",
+      "defaultValue": "10",
       "metadata": {
         "description": "IP suffix for first master node"
       }
     },
     "dataNodeAddressStart": {
-      "type": "int",
-      "defaultValue": 20,
+      "type": "string",
+      "defaultValue": "20",
       "metadata": {
         "description": "IP suffix for first data node"
       }
@@ -148,8 +148,8 @@
       }
     },
     "numberOfDataNodes": {
-      "type": "int",
-      "defaultValue": 3,
+      "type": "string",
+      "defaultValue": "3",
       "metadata": {
         "description": "Number of data nodes for Prod (defaults to 3)"
       }
@@ -265,12 +265,12 @@
     },
     "clusterTshirtSizeEval": {
       "masterNodeCount": 1,
-      "dataNodeCount": "[parameters('numberOfDataNodes')]",
+      "dataNodeCount": "[int(parameters('numberOfDataNodes'))]",
       "highAvailability": "false"
     },
     "clusterTshirtSizeProd": {
       "masterNodeCount": 3,
-      "dataNodeCount": "[parameters('numberOfDataNodes')]",
+      "dataNodeCount": "[int(parameters('numberOfDataNodes'))]",
       "highAvailability": "true"
     },
     "clusterSpec": "[variables(concat('clusterTshirtSize', parameters('tshirtSize')))]",
@@ -286,8 +286,8 @@
       "addressPrefix": "[variables('addressPrefix')]",
       "subnetPrefix": "[variables('subnetPrefix')]",
       "privateIPPrefix": "[variables('nodeAddressPrefix')]",
-      "masterNodeAddressStart": "[parameters('masterNodeAddressStart')]",
-      "dataNodeAddressStart": "[parameters('dataNodeAddressStart')]",
+      "masterNodeAddressStart": "[int(parameters('masterNodeAddressStart'))]",
+      "dataNodeAddressStart": "[int(parameters('dataNodeAddressStart'))]",
       "virtualNetworkName": "[parameters('virtualNetworkName')]",
       "virtualNetworkRGName":"[parameters('virtualNetworkRGName')]",
       "vnetNewOrExisting": "[parameters('vnetNewOrExisting')]",
