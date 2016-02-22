@@ -373,6 +373,7 @@
         ],
         "outputs": {
             "storageAccountPrefix": "[steps('infraInfo').storageAccount.prefix]",
+            "vmSize":"[steps('infraInfo').clusterVmSize]",
             "dnsNamePrefix": "[steps('infraInfo').DNSPrefix.domainNameLabel]",
             "virtualNetworkName":"[steps('infraInfo').vnetSpec.name]",
             "subnetName":"[steps('infraInfo').vnetSpec.subnets.subnet1.name]",
