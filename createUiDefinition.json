@@ -159,6 +159,7 @@
                         "name": "masterNodeAddressStart",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Master Node Address Start",
+                        "defaultValue": "10",
                         "toolTip": "IP suffix for first master node",
                         "constraints": {
                             "regex":"^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
@@ -169,6 +170,7 @@
                         "name": "dataNodeAddressStart",
                         "type": "Microsoft.Common.TextBox",
                         "label": "Data Node Address Start",
+                        "defaultValue": "20",
                         "toolTip": "IP suffix for first data node",
                         "constraints": {
                             "regex":"^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
