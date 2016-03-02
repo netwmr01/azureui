@@ -108,6 +108,14 @@
         "description": "Virtual Network address CIDR"
       }
     },
+    "subnetFullIPAddress":
+    {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "subnet Full IP Address through Marketplace selector"
+      }
+    },
     "subnetPrefix": {
       "type": "string",
       "defaultValue": "10.3.0.0/16",
@@ -285,6 +293,7 @@
     "networkSpec": {
       "addressPrefix": "[variables('addressPrefix')]",
       "subnetPrefix": "[variables('subnetPrefix')]",
+      "fullIPAddress": "[variables('subnetFullIPAddress')]",
       "privateIPPrefix": "[variables('nodeAddressPrefix')]",
       "masterNodeAddressStart": "[int(parameters('masterNodeAddressStart'))]",
       "dataNodeAddressStart": "[int(parameters('dataNodeAddressStart'))]",

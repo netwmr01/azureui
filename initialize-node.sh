@@ -11,16 +11,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#Helper functions to convert ip to int and int to ip
+function atoi
+{
+#Returns the integer representation of an IP arg, passed in ascii dotted-decimal notation (x.x.x.x)
+IP=$1; IPNUM=0
+for (( i=0 ; i<4 ; ++i )); do
+((IPNUM+=${IP%%.*}*$((256**$((3-${i}))))))
+IP=${IP#*.}
+done
+echo $IPNUM
+}
+
+function itoa
+{
+#returns the dotted-decimal ascii form of an IP arg passed in integer format
+echo -n $(($(($(($((${1}/256))/256))/256))%256)).
+echo -n $(($(($((${1}/256))/256))%256)).
+echo -n $(($((${1}/256))%256)).
+echo $((${1}%256))
+}
+
 echo "initializing nodes..."
 IPPREFIX=$1
 MASTERSTARTINGIP=$2
 WORKERSTARTINGIP=$3
-NAMEPREFIX=$4
-NAMESUFFIX=$5
-MASTERNODES=$6
-DATANODES=$7
-ADMINUSER=$8
-NODETYPE=$9
+FULLIPADDRESS=$4
+NAMEPREFIX=$5
+NAMESUFFIX=$6
+MASTERNODES=$7
+DATANODES=$8
+ADMINUSER=$9
+NODETYPE=${10}
+
+MasterWorderNodeAddressGap=10
 
 # Converts a domain like machine.domain.com to domain.com by removing the machine name
 NAMESUFFIX=`echo $NAMESUFFIX | sed 's/^[^.]*\.//'`
@@ -31,15 +55,33 @@ NODES=()
 let "NAMEEND=MASTERNODES-1"
 for i in $(seq 0 $NAMEEND)
 do 
-  let "IP=i+MASTERSTARTINGIP"
-  NODES+=("$IPPREFIX$IP:${NAMEPREFIX}-mn$i.$NAMESUFFIX:${NAMEPREFIX}-mn$i")
+
+  if [[ !  -z  ${FULLIPADDRESS}  ]]; then
+      IP=`atoi ${FULLIPADDRESS}`
+      let "IP=i+IP"
+      HOSTIP=`itoa ${IP}`
+  else
+      let "IP=i+MASTERSTARTINGIP"
+      HOSTIP="$IPPREFIX$IP"
+  fi
+  echo "$HOSTIP:${NAMEPREFIX}-mn$i.$NAMESUFFIX:${NAMEPREFIX}-mn$i"
+  NODES+=("$HOSTIP:${NAMEPREFIX}-mn$i.$NAMESUFFIX:${NAMEPREFIX}-mn$i")
+
 done
 
 let "DATAEND=DATANODES-1"
 for i in $(seq 0 $DATAEND)
 do 
-  let "IP=i+WORKERSTARTINGIP"
-  NODES+=("$IPPREFIX$IP:${NAMEPREFIX}-dn$i.$NAMESUFFIX:${NAMEPREFIX}-dn$i")
+
+  if [[ !  -z  ${FULLIPADDRESS}  ]]; then
+      IP=`atoi ${FULLIPADDRESS}`
+      let "IP=i+IP"
+      HOSTIP=`itoa ${IP}`
+  else
+      let "IP=i+WORKERSTARTINGIP+MasterWorderNodeAddressGap"
+      HOSTIP="$IPPREFIX$IP"
+  fi
+  NODES+=("$HOSTIP:${NAMEPREFIX}-dn$i.$NAMESUFFIX:${NAMEPREFIX}-dn$i")
 done
 
 OIFS=$IFS
