@@ -11,7 +11,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#Helper functions to convert ip to int and int to ip
+echo "initializing nodes..."
+
+MASTERIP=$1
+WORKERIP=$2
+NAMEPREFIX=$3
+NAMESUFFIX=$4
+MASTERNODES=$5
+DATANODES=$6
+ADMINUSER=$7
+NODETYPE=$8
+
 function atoi
 {
 #Returns the integer representation of an IP arg, passed in ascii dotted-decimal notation (x.x.x.x)
@@ -32,20 +42,6 @@ echo -n $(($((${1}/256))%256)).
 echo $((${1}%256))
 }
 
-echo "initializing nodes..."
-IPPREFIX=$1
-MASTERSTARTINGIP=$2
-WORKERSTARTINGIP=$3
-FULLIPADDRESS=$4
-NAMEPREFIX=$5
-NAMESUFFIX=$6
-MASTERNODES=$7
-DATANODES=$8
-ADMINUSER=$9
-NODETYPE=${10}
-
-MasterWorderNodeAddressGap=10
-
 # Converts a domain like machine.domain.com to domain.com by removing the machine name
 NAMESUFFIX=`echo $NAMESUFFIX | sed 's/^[^.]*\.//'`
 
@@ -55,32 +51,18 @@ NODES=()
 let "NAMEEND=MASTERNODES-1"
 for i in $(seq 0 $NAMEEND)
 do 
-
-  if [[ !  -z  ${FULLIPADDRESS}  ]]; then
-      IP=`atoi ${FULLIPADDRESS}`
-      let "IP=i+IP"
-      HOSTIP=`itoa ${IP}`
-  else
-      let "IP=i+MASTERSTARTINGIP"
-      HOSTIP="$IPPREFIX$IP"
-  fi
-  echo "$HOSTIP:${NAMEPREFIX}-mn$i.$NAMESUFFIX:${NAMEPREFIX}-mn$i"
+  IP=`atoi ${MASTERIP}`
+  let "IP=i+IP"
+  HOSTIP=`itoa ${IP}`
   NODES+=("$HOSTIP:${NAMEPREFIX}-mn$i.$NAMESUFFIX:${NAMEPREFIX}-mn$i")
-
 done
 
 let "DATAEND=DATANODES-1"
 for i in $(seq 0 $DATAEND)
 do 
-
-  if [[ !  -z  ${FULLIPADDRESS}  ]]; then
-      IP=`atoi ${FULLIPADDRESS}`
-      let "IP=i+IP"
-      HOSTIP=`itoa ${IP}`
-  else
-      let "IP=i+WORKERSTARTINGIP+MasterWorderNodeAddressGap"
-      HOSTIP="$IPPREFIX$IP"
-  fi
+  IP=`atoi ${WORKERIP}`
+  let "IP=i+IP"
+  HOSTIP=`itoa ${IP}`
   NODES+=("$HOSTIP:${NAMEPREFIX}-dn$i.$NAMESUFFIX:${NAMEPREFIX}-dn$i")
 done
 
