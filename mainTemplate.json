@@ -293,7 +293,7 @@
     "networkSpec": {
       "addressPrefix": "[variables('addressPrefix')]",
       "subnetPrefix": "[variables('subnetPrefix')]",
-      "fullIPAddress": "[variables('subnetFullIPAddress')]",
+      "fullIPAddress": "[parameters('subnetFullIPAddress')]",
       "privateIPPrefix": "[variables('nodeAddressPrefix')]",
       "masterNodeAddressStart": "[int(parameters('masterNodeAddressStart'))]",
       "dataNodeAddressStart": "[int(parameters('dataNodeAddressStart'))]",
