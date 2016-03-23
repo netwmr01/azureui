@@ -69,10 +69,10 @@
         "typeHandlerVersion": "1.4",
         "settings": {
           "fileUris": [
-            "[concat(parameters('scriptsUri'), 'bootstrap-cloudera.sh')]",
-            "[concat(parameters('scriptsUri'), 'initialize-cloudera-server.sh')]",
-            "[concat(parameters('scriptsUri'), 'cmxDeployOnIbiza.py')]",
-            "[concat(parameters('scriptsUri'), 'install-postgresql.sh')]"
+            "[concat(parameters('scriptsUri'), '/bootstrap-cloudera.sh')]",
+            "[concat(parameters('scriptsUri'), '/initialize-cloudera-server.sh')]",
+            "[concat(parameters('scriptsUri'), '/cmxDeployOnIbiza.py')]",
+            "[concat(parameters('scriptsUri'), '/install-postgresql.sh')]"
           ]
         },
         "protectedSettings": {
