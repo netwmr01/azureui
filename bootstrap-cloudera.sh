@@ -13,30 +13,26 @@
 # Usage: bootstrap-cloudera-1.0.sh {clusterName} {managment_node} {cluster_nodes} {isHA} {sshUserName} [{sshPassword}]
 
 # Put the command line parameters into named variables
-IPPREFIX=$1
-MASTERSTARTINGIP=$2
-WORKERSTARTINGIP=$3
-FULLIPADDRESS=$4
-NAMEPREFIX=$5
-NAMESUFFIX=$6
-MASTERNODES=$7
-DATANODES=$8
-ADMINUSER=$9
-HA=${10}
-PASSWORD=${11}
-CMUSER=${12}
-CMPASSWORD=${13}
-EMAILADDRESS=${14}
-BUSINESSPHONE=${15}
-FIRSTNAME=${16}
-LASTNAME=${17}
-JOBROLE=${18}
-JOBFUNCTION=${19}
-COMPANY=${20}
-INSTALLCDH=${21}
-VMSIZE=${22}
-
-MasterWorderNodeAddressGap=10
+MASTERIP=$1
+WORKERIP=$2
+NAMEPREFIX=$3
+NAMESUFFIX=$4
+MASTERNODES=$5
+DATANODES=$6
+ADMINUSER=$7
+HA=$8
+PASSWORD=${9}
+CMUSER=${10}
+CMPASSWORD=${11}
+EMAILADDRESS=${12}
+BUSINESSPHONE=${13}
+FIRSTNAME=${14}
+LASTNAME=${15}
+JOBROLE=${16}
+JOBFUNCTION=${17}
+COMPANY=${18}
+INSTALLCDH=${19}
+VMSIZE=${20}
 
 CLUSTERNAME=$NAMEPREFIX
 
@@ -70,17 +66,11 @@ log "my vmsize: $VMSIZE"
 # Converts a domain like machine.domain.com to domain.com by removing the machine name
 NAMESUFFIX=`echo $NAMESUFFIX | sed 's/^[^.]*\.//'`
 
-if [[ !  -z  ${FULLIPADDRESS}  ]]; then
-    IP=`atoi ${FULLIPADDRESS}`
-    let "IP=i+IP"
-    HOSTIP=`itoa ${IP}`
-else
-    let "IP=i+MASTERSTARTINGIP"
-    HOSTIP="$IPPREFIX$IP"
-fi
-
+log "master ip: $MASTERIP"
+HOSTIP=${MASTERIP}
 ManagementNode="$HOSTIP:${NAMEPREFIX}-mn0.$NAMESUFFIX:${NAMEPREFIX}-mn0"
-mip=$(echo "$ManagementNode" | sed 's/:/ /' | sed 's/:/ /' | cut -d ' ' -f 1)
+
+mip=${MASTERIP}
 
 log "set private key"
 #use the key from the key vault as the SSH private key
@@ -97,29 +87,19 @@ NODES=()
 
 let "NAMEEND=MASTERNODES-1"
 for i in $(seq 1 $NAMEEND)
-do 
-  if [[ !  -z  ${FULLIPADDRESS}  ]]; then
-      IP=`atoi ${FULLIPADDRESS}`
-      let "IP=i+IP"
-      HOSTIP=`itoa ${IP}`
-  else
-      let "IP=i+MASTERSTARTINGIP"
-      HOSTIP="$IPPREFIX$IP"
-  fi
+do
+  IP=`atoi ${MASTERIP}`
+  let "IP=i+IP"
+  HOSTIP=`itoa ${IP}`
   NODES+=("$HOSTIP:${NAMEPREFIX}-mn$i.$NAMESUFFIX:${NAMEPREFIX}-mn$i")
 done
 
 let "DATAEND=DATANODES-1"
 for i in $(seq 0 $DATAEND)
 do 
-  if [[ !  -z  ${FULLIPADDRESS}  ]]; then
-      IP=`atoi ${FULLIPADDRESS}`
-      let "IP=i+IP+MasterWorderNodeAddressGap"
-      HOSTIP=`itoa ${IP}`
-  else
-      let "IP=i+WORKERSTARTINGIP"
-      HOSTIP="$IPPREFIX$IP"
-  fi
+  IP=`atoi ${WORKERIP}`
+  let "IP=i+IP"
+  HOSTIP=`itoa ${IP}`
   NODES+=("$HOSTIP:${NAMEPREFIX}-dn$i.$NAMESUFFIX:${NAMEPREFIX}-dn$i")
 done
 

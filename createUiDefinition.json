@@ -348,7 +348,7 @@
             "virtualNetworkRGName": "[steps('infraInfo').vnetSpec.resourceGroup]",
             "addressPrefix": "[steps('infraInfo').vnetSpec.addressPrefix]",
             "subnetPrefix": "[steps('infraInfo').vnetSpec.subnets.subnet1.addressPrefix]",
-            "subnetFullIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
+            "masterNodeIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
             "adminUserName": "[basics('username')]",
             "adminPassword": "[basics('password')]",
             "location": "[location()]",
