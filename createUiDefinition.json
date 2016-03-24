@@ -96,7 +96,7 @@
                         "recommendedSizes": [
                             "Standard_DS14",
                             "Standard_DS14",
-                            "Standard_DS14"
+                            "Standard_DS13"
                         ],
                         "constraints": {
                             "required": true,
