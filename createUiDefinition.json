@@ -6,7 +6,7 @@
             {
                 "name": "username",
                 "type": "Microsoft.Compute.UserNameTextBox",
-                "label": "Username",
+                "label": "Linux Username",
                 "toolTip": "Username for linux virtual machine",
                 "constraints": {
                     "required": true
@@ -16,7 +16,10 @@
             {
                 "name": "password",
                 "type": "Microsoft.Common.PasswordBox",
-                "label":"Password for Linux admin user",
+                "label": {
+                    "password": "Linux password",
+                    "confirmPassword": "Confirm password"
+                },
                 "toolTip": "Password for the linux virtual machine.",
                 "constraints": {
                     "required": true,
@@ -149,7 +152,10 @@
                     {
                         "name": "dbPassword",
                         "type": "Microsoft.Common.PasswordBox",
-                        "label":"Password for DB server used by Director",
+                        "label": {
+                            "password": "DB Password",
+                            "confirmPassword": "Confirm password"
+                        },
                         "toolTip": "Password for DB server used by Director.",
                         "constraints": {
                             "required": true,
@@ -171,7 +177,6 @@
                 "bladeTitle": "Cloudera Director setup information",
                 "elements":
                 [
-                    
                     {
                         "name": "subscriptionId",
                         "type": "Microsoft.Common.TextBox",
@@ -217,7 +222,10 @@
                     {
                         "name": "clientSecret",
                         "type": "Microsoft.Common.PasswordBox",
-                        "label": "client Secret to be used by Director",
+                        "label": {
+                            "password": "Client Secret",
+                            "confirmPassword": "Confirm Client Secret"
+                        },
                         "toolTip": "client Secret ID to be used by Director",
                         "constraints": {
                             "required": true,
@@ -230,15 +238,18 @@
                     },
                     {
                         "name": "privateKey",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Private key to be used by Director",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Private Key",
+                            "confirmPassword": "Confirm Client Secret"
+                        },
                         "toolTip": "Private key to be used by Director",
                         "constraints": {
                             "required": true,
                             "validationMessage": "The subscription must be a valid UUID"
                         },
                         "options": {
-                            "hideConfirmation": false
+                            "hideConfirmation": true
                         }
                     },
                     {
