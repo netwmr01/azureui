@@ -139,7 +139,7 @@
                     {
                         "name": "dbUsername",
                         "type": "Microsoft.Compute.UserNameTextBox",
-                        "label": "Username",
+                        "label": "DB Username",
                         "toolTip": "Username for DB server used by Director.",
                         "constraints": {
                             "required": true
