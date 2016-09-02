@@ -45,11 +45,11 @@
                         "type": "Microsoft.Network.PublicIpAddressCombo",
                         "label": {
                             "publicIpAddress": "Resource name for this IP prefix",
-                            "domainNameLabel": "Domain name prefix and cluster name for CDH"
+                            "domainNameLabel": "Domain name prefix Director Server"
                         },
                         "toolTip": {
                             "publicIpAddress": "Only new public IP is currently supported",
-                            "domainNameLabel": "Cloudera Manager will be accessible from port 7180 of this domain"
+                            "domainNameLabel": "Cloudera Director will be accessible from port 7189"
                         },
                         "defaultValue": {
                             "publicIpAddressName": "cdhpip",
@@ -64,26 +64,15 @@
                         }
                     },
                     {
-                        "name": "storageAccount",
-                        "type": "Microsoft.Storage.MultiStorageAccountCombo",
-                        "label": {
-                            "prefix": "Storage account prefix",
-                            "type": "Storage account type"
-                        },
-                        "toolTip": {
-                            "prefix": "Storage account prefix the CDH VMs, only new storage account is supported",
-                            "type": "Only Premium Storage"
-                        },
-                        "defaultValue": {
-                            "prefix": "change_me_to_be_unique",
-                            "type": "Premium_LRS"
-                        },
+                        "name": "dnsNameSuffix",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "DNS suffix ",
+                        "toolTip": "This suffix is used internally within the vnet",
                         "constraints": {
-                            "allowedTypes": [
-                                "Premium_LRS"
-                            ],
-                            "count": 10,
                             "required": true
+                        },
+                        "options": {
+                            "hideConfirmation": false
                         }
                     },
                     {
@@ -95,14 +84,17 @@
                         "osPlatform": "Linux",
                         "recommendedSizes": [
                             "Standard_DS14",
-                            "Standard_DS14",
+                            "Standard_DS14v2",
                             "Standard_DS13"
                         ],
                         "constraints": {
                             "required": true,
                             "allowedSizes": [
                                 "Standard_DS13",
-                                "Standard_DS14"
+                                "Standard_DS14",
+                                "Standard_DS12v2",
+                                "Standard_DS13v2",
+                                "Standard_DS14v2"
                             ]
                         },
                         "imageReference": {
@@ -143,6 +135,30 @@
                                 }
                             }
                         }
+                    },
+                    {
+                        "name": "dbUsername",
+                        "type": "Microsoft.Compute.UserNameTextBox",
+                        "label": "Username",
+                        "toolTip": "Username for DB server used by Director.",
+                        "constraints": {
+                            "required": true
+                        },
+                        "osPlatform": "Linux"
+                    },
+                    {
+                        "name": "dbPassword",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label":"Password for DB server used by Director",
+                        "toolTip": "Password for DB server used by Director.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^(?:(?=.*[a-z])(?:(?=.*[A-Z])(?=.*[\\d\\W])|(?=.*\\W)(?=.*\\d))|(?=.*\\W)(?=.*[A-Z])(?=.*\\d)).{6,72}$",
+                            "validationMessage": "The password must be between 6 and 72 characters long, and contain characters from at least 3 of the following groups: uppercase characters, lowercase characters, numbers, and special characters."
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        }
                     }
                 ]
             },
@@ -152,59 +168,92 @@
                     "preValidation": "Provide Cloudera setup information",
                     "postValidation": "Done"
                 },
-                "bladeTitle": "Cloudera setup information",
+                "bladeTitle": "Cloudera Director setup information",
                 "elements":
                 [
+                    
                     {
-                        "name": "cmUsername",
-                        "type": "Microsoft.Compute.UserNameTextBox",
-                        "label": "Cloudera Manager User name",
-                        "toolTip": "Username for Cloudera Manager",
-                        "constraints": {
-                            "required": true
-                        },
-                        "osPlatform": "Linux"
-                    },
-                    {
-                        "name": "cmPassword",
-                        "type": "Microsoft.Common.PasswordBox",
-                        "label": "Password for Cloudera Manager",
-                        "toolTip": "Password for logging into Cloudera Manager",
+                        "name": "subscriptionId",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Subscription ID to be used by Director",
+                        "toolTip": "Subscription ID to be used by Director",
                         "constraints": {
                             "required": true,
-                            "regex": "^(?:(?=.*[a-z])(?:(?=.*[A-Z])(?=.*[\\d\\W])|(?=.*\\W)(?=.*\\d))|(?=.*\\W)(?=.*[A-Z])(?=.*\\d)).{6,72}$",
-                            "validationMessage": "The password must be between 6 and 72 characters long, and contain characters from at least 3 of the following groups: uppercase characters, lowercase characters, numbers, and special characters."
+                            "regex": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
+                            "validationMessage": "The subscription must be a valid UUID"
                         },
                         "options": {
                             "hideConfirmation": false
                         }
                     },
                     {
-                        "name": "clusterType",
-                        "type": "Microsoft.Common.DropDown",
-                        "label": "Cluster Type",
-                        "defaultValue": "POC",
-                        "toolTip": "Choose Production for High Availability deployments, Choose POC for one master deployments ",
+                        "name": "tenantId",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Tenant ID to be used by Director",
+                        "toolTip": "Tenant ID to be used by Director",
                         "constraints": {
                             "required": true,
-                            "allowedValues": [
-                                { "label": "Production", "value": "Prod"},
-                                { "label": "POC", "value": "Eval"}
-                            ]
+                            "regex": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
+                            "validationMessage": "The tenant ID must be a valid UUID"
+                        },
+                        "options": {
+                            "hideConfirmation": false
                         }
                     },
                     {
-                        "name": "datanodeCount",
+                        "name": "clientId",
                         "type": "Microsoft.Common.TextBox",
-                        "label": "Number of data nodes",
-                        "defaultValue": "3",
-                        "toolTip": "Number of data nodes, 3 to 90",
+                        "label": "Subscription ID to be used by Director",
+                        "toolTip": "Subscription ID to be used by Director",
                         "constraints": {
                             "required": true,
-                            "regex":"^([3-9]|[1-8][0-9]|90)$",
-                            "validationMessage":"Number of data nodes must within 3 to 90"
+                            "regex": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
+                            "validationMessage": "The subscription must be a valid UUID"
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        }
+                    },
+                    {
+                        "name": "clientSecret",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": "client Secret to be used by Director",
+                        "toolTip": "client Secret ID to be used by Director",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^(?:(?=.*[a-z])(?:(?=.*[A-Z])(?=.*[\\d\\W])|(?=.*\\W)(?=.*\\d))|(?=.*\\W)(?=.*[A-Z])(?=.*\\d)).{6,72}$",
+                            "validationMessage": "The password must be between 6 and 72 characters long, and contain characters from at least 3 of the following groups: uppercase characters, lowercase characters, numbers, and special characters."
+                        },
+                        "options": {
+                            "hideConfirmation": true
+                        }
+                    },
+                    {
+                        "name": "privateKey",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Private key to be used by Director",
+                        "toolTip": "Private key to be used by Director",
+                        "constraints": {
+                            "required": true,
+                            "validationMessage": "The subscription must be a valid UUID"
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        }
+                    },
+                    {
+                        "name": "passPhrase",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Passphrase to deco private key",
+                        "toolTip": "leave it blank if not needed",
+                        "constraints": {
+                            "required": false
+                        },
+                        "options": {
+                            "hideConfirmation": false
                         }
                     }
+
                 ]
             },
             {
