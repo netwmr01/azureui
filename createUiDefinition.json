@@ -208,12 +208,12 @@
                     {
                         "name": "clientId",
                         "type": "Microsoft.Common.TextBox",
-                        "label": "Subscription ID to be used by Director",
-                        "toolTip": "Subscription ID to be used by Director",
+                        "label": "Client ID to be used by Director",
+                        "toolTip": "Client ID to be used by Director",
                         "constraints": {
                             "required": true,
                             "regex": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
-                            "validationMessage": "The subscription must be a valid UUID"
+                            "validationMessage": "The client ID must be a valid UUID"
                         },
                         "options": {
                             "hideConfirmation": false
@@ -255,7 +255,7 @@
                     {
                         "name": "passPhrase",
                         "type": "Microsoft.Common.TextBox",
-                        "label": "Passphrase to deco private key",
+                        "label": "Passphrase to decode private key",
                         "toolTip": "leave it blank if not needed",
                         "constraints": {
                             "required": false
