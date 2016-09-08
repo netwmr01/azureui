@@ -531,8 +531,6 @@
             "dnsServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
             "mysqlServerIPAddress": "[steps('infraInfo').mysqlServerIPAddress]",
            
-            
-            "location": "[location()]",
             "company": "[steps('userInformation').company]",
             "emailAddress": "[steps('userInformation').emailAddress]",
             "businessPhone": "[steps('userInformation').businessPhone]",
