@@ -1,0 +1,95 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "version":{
+      "type":"object"
+    },
+    "networkSpec": {
+      "type": "object"
+    },
+    "asName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "masterAsName":"asmaster",
+    "workerAsName":"asworker",
+    "edgeAsName":"asedge"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('version').resourceAPIVersion]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[parameters('asName')]",
+      "location": "[resourceGroup().location]",
+      "properties": { }
+    },
+    {
+      "apiVersion": "[parameters('version').resourceAPIVersion]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('masterAsName')]",
+      "location": "[resourceGroup().location]",
+      "properties": { }
+    },
+    {
+      "apiVersion": "[parameters('version').resourceAPIVersion]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('workerAsName')]",
+      "location": "[resourceGroup().location]",
+      "properties": { }
+    },
+    {
+      "apiVersion": "[parameters('version').resourceAPIVersion]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('edgeAsName')]",
+      "location": "[resourceGroup().location]",
+      "properties": { }
+    },
+    {
+      "apiVersion": "[parameters('version').resourceAPIVersion]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('networkSpec').virtualNetworkName]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('networkSpec').addressPrefix]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('networkSpec').virtualNetworkSubnetName]",
+            "properties": {
+              "addressPrefix": "[parameters('networkSpec').subnetPrefix]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[parameters('version').resourceAPIVersion]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(parameters('networkSpec').virtualNetworkName,'-nsg')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH",
+            "properties": {
+              "description": "Allows SSH traffic",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

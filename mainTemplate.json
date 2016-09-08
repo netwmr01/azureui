@@ -2,7 +2,7 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "adminUserName": {
+    "adminUsername": {
       "type": "string",
       "defaultValue": "azureuser",
       "metadata": {
@@ -15,58 +15,113 @@
         "description": "Admin password for the VMs (A mix of upper and lower-case characters, digits and symbols)"
       }
     },
-    "cmUsername": {
+    "dirUsername": {
       "type": "string",
-      "defaultValue": "cmadmin",
+      "defaultValue": "diradmin",
       "metadata": {
-        "description": "User name for the Cloudera Manager"
+        "description": "User name for the Cloudera Director Server"
       }
     },
-    "cmPassword": {
+    "dirPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "password for the Cloudera Manager (A mix of upper and lower-case characters, digits and symbols)"
+        "description": "password for the Cloudera Director (A mix of upper and lower-case characters, digits and symbols)"
       }
     },
-    "storageAccountPrefix": {
+    "dbUsername": {
+      "type": "string",
+      "defaultValue": "dbadmin",
+      "metadata": {
+        "description": "User name for the MySQL Server"
+      }
+    },
+    "dbPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "password for the DB Server (A mix of upper and lower-case characters, digits and symbols)"
+      }
+    },
+    "subscriptionId":{
       "type": "string",
       "metadata": {
-        "description": "Unique namespace for the Storage Account where the VM disks will be placed (alphahumeric characters only)"
+        "description": ""
+      }
+    },
+    "tenantId":{
+      "type": "string",
+      "metadata": {
+        "description": ""
+      }
+    },
+    "clientId":{
+      "type": "string",
+      "metadata": {
+        "description": ""
+      }
+    },
+    "clientSecret":{
+      "type": "securestring",
+      "metadata": {
+        "description": ""
+      }
+    },
+    "passPhrase":{
+      "type": "securestring",
+      "metadata": {
+        "description": ""
+      }
+    },
+    "privateKey":{
+      "type": "string",
+      "metadata": {
+        "description": ""
+      }
+    },
+    "masterType": {
+      "type": "string",
+      "defaultValue": "Standard_DS13",
+      "metadata": {
+        "description": "The size of the VMs deployed as Master(s) in the cluster"
+      }
+    },
+    "workerType": {
+      "type": "string",
+      "defaultValue": "Standard_DS14",
+      "metadata": {
+        "description": "The size of the VMs deployed as Workers in the cluster"
+      }
+    },
+    "edgeType": {
+      "type": "string",
+      "defaultValue": "Standard_DS14",
+      "metadata": {
+        "description": "The size of the VMs deployed as Edge(s) in the cluster"
+      }
+    },
+    "directorEnvironmentName":{
+      "type": "string",
+      "defaultValue": "Director_Azure_Deployment",
+      "metadata": {
+        "description": "Environment name use by Cloudera Director"
       }
     },
     "dnsNamePrefix": {
       "type": "string",
       "metadata": {
-        "description": "Unique public DNS name where the VMs will be exposed"
+        "description": "Unique DNS name where the VMs will be exposed"
       }
     },
-    "location": {
+    "dnsNameSuffix": {
       "type": "string",
-      "defaultValue": "westeurope",
-      "allowedValues": [
-        "westus",
-        "eastus",
-        "northeurope", 
-        "westeurope",
-        "eastasia",
-        "southeastasia",
-        "southcentralus",
-        "centralus",
-        "eastus2",
-        "japaneast",
-        "japanwest",
-        "australiaeast",
-        "australiasoutheast"
-      ],
       "metadata": {
-        "description": "Location where resources will be provisioned (must support premium storage)"
-      }
+        "description": "Unique DNS suffix where the VMs will be exposed"
+        }
     },
     "storageAccountType": {
       "type": "string",
-      "defaultValue": "Premium_LRS",
+      "defaultValue": "Standard_LRS",
       "metadata": {
-        "description": "The type of the Storage Account to be created (Default to Premium_LRS)"
+        "description": "The type of the Storage Account to be created (Default to Standard_LRS)"
       }
     },
     "virtualNetworkName": {
@@ -115,45 +170,28 @@
         "description": "CIDR for the subnet where VMs will be placed"
       }
     },
-    "masterNodeIPAddress": {
+    "directorServerIPAddress": {
       "type": "string",
       "defaultValue": "10.3.0.4",
       "metadata": {
-        "description": "IP address for the first master"
+        "description": "IP address for the director server"
       }
     },
-    "dataNodeIPOffSetFromMaster": {
-      "type": "int",
-      "defaultValue": 5,
-      "metadata": {
-        "description": "IP address from the master node, for example if the first master is 10.1.1.1, then the first dataNode would be 10.1.1.11"
-      }
-    },
-    "tshirtSize": {
+    "dnsServerIPAddress": {
       "type": "string",
-      "defaultValue": "Eval",
-      "allowedValues": [
-        "Eval",
-        "Prod"
-      ],
+      "defaultValue": "10.3.0.4",
       "metadata": {
-        "description": "T-shirt size of the Cloudera cluster (Eval, Prod)"
+        "description": "IP address for the dns server"
       }
     },
-    "numberOfDataNodes": {
+    "mysqlServerIPAddress": {
       "type": "string",
-      "defaultValue": "3",
+      "defaultValue": "10.3.0.5",
       "metadata": {
-        "description": "Number of data nodes for Prod (defaults to 3)"
+        "description": "IP address for the mysql server"
       }
     },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": "Standard_DS14",
-      "metadata": {
-        "description": "The size of the VMs deployed in the cluster (defaults to Standard_DS14)"
-      }
-    },
+
     "company": {
       "type": "string",
       "defaultValue": "Company",
@@ -243,50 +281,62 @@
     }
   },
   "variables": {
-    "templateAPIVersion":"2015-11-01",
-    "resourceAPIVersion":"2015-06-15",
-    "installCDH":"True",
+    "version":{
+      "templateAPIVersion":"2015-11-01",
+      "resourceAPIVersion":"2015-06-15",
+      "typeHandlerVersion":"1.5",
+      "contentVersion":"1.0.0.0"
+    },
     "addressPrefix":"[parameters('addressPrefix')]",
     "subnetPrefix":"[parameters('subnetPrefix')]",
     "scriptsUri": "[parameters('artifactsBaseUrl')]",
     "share-resourcesUri": "[concat(variables('scriptsUri'), '/shared-resources-', parameters('vnetNewOrExisting'), '-vnet.json')]",
-    "data-nodeUri":"[concat(variables('scriptsUri'), '/data-node-', toLower(subString(parameters('vmSize'), 9, 4)), '.json')]",
-    "sa": "[parameters('masterNodeIPAddress')]",
-    "ipOctet01": "[concat(split(variables('sa'), '.')[0], '.', split(variables('sa'), '.')[1], '.')]",
-    "ipOctet2": "[int(split(variables('sa'), '.')[2])]",
-    "ipOctet3": "[int(split(variables('sa'), '.')[3])]",
-    "datanodeIpOctet3":"[add(int(split(variables('sa'), '.')[3]), parameters('dataNodeIPOffSetFromMaster'))]",
+    "vnetUri": "[concat(variables('scriptsUri'), '/update-', parameters('vnetNewOrExisting'), '-vnet-dns.json')]",
+    "networkRestartUri": "[concat(variables('scriptsUri'), '/network-restart.json')]",
     "storageAccount": {
-      "prefix": "[parameters('storageAccountPrefix')]",
+      "prefix": "[concat(uniquestring(resourceGroup().id),'storage')]",
       "type": "[parameters('storageAccountType')]"
     },
-    "clusterTshirtSizeEval": {
-      "masterNodeCount": 1,
-      "dataNodeCount": "[int(parameters('numberOfDataNodes'))]",
-      "highAvailability": "false"
+    "clusterParameters":{
+      "envName":"[parameters('directorEnvironmentName')]",
+      "location":"[resourceGroup().location]",
+      "subId":"[parameters('subscriptionId')]",
+      "tenantId":"[parameters('tenantId')]",
+      "clientId":"[parameters('clientId')]",
+      "clientSecret":"[parameters('clientSecret')]",
+      "adminUsername":"[parameters('adminUsername')]",
+      "passPhrase":"[parameters('passPhrase')]",
+      "privateKey":"[parameters('privateKey')]",
+      "networkSecurityGroupResourceGroup":"[resourceGroup().name]",
+      "networkSecurityGroup":"[concat(parameters('virtualNetworkName'),'-nsg')]",
+      "virtualNetworkResourceGroup":"[resourceGroup().name]",
+      "virtualNetwork":"[parameters('virtualNetworkName')]",
+      "subnetName":"[parameters('subnetName')]",
+      "computeResourceGroup":"[resourceGroup().name]",
+      "hostFqdnSuffix":"[parameters('dnsNameSuffix')]",
+      "dbAddress":"[parameters('mysqlServerIPAddress')]",
+      "dbUsername":"[parameters('dbUsername')]",
+      "dbPassword":"[parameters('dbPassword')]",
+      "masterType":"[parameters('masterType')]",
+      "workerType":"[parameters('workerType')]",
+      "edgeType":"[parameters('edgeType')]",
+      "dirUsername":"[parameters('dirUsername')]",
+      "dirPassword":"[parameters('dirPassword')]"
     },
-    "clusterTshirtSizeProd": {
-      "masterNodeCount": 3,
-      "dataNodeCount": "[int(parameters('numberOfDataNodes'))]",
-      "highAvailability": "true"
-    },
-    "clusterSpec": "[variables(concat('clusterTshirtSize', parameters('tshirtSize')))]",
     "vmSpec": {
-      "vmSize": "[parameters('vmSize')]",
-      "adminUserName": "[parameters('adminUserName')]",
+      "vmSize": "Standard_D3",
+      "adminUsername": "[parameters('adminUsername')]",
       "adminPassword": "[parameters('adminPassword')]",
-      "masterNodeASName": "[concat(parameters('dnsNamePrefix'), '-mnAS')]",
-      "dataNodeASName": "[concat(parameters('dnsNamePrefix'), '-dnAS')]"
+      "asName": "[concat(parameters('dnsNamePrefix'), '-as')]",
+      "dbUsername": "[parameters('dbUsername')]",
+      "dbPassword": "[parameters('dbPassword')]"
     },
     "networkSpec": {
       "addressPrefix": "[variables('addressPrefix')]",
       "subnetPrefix": "[variables('subnetPrefix')]",
-      "ipOctet01": "[variables('ipOctet01')]",
-      "ipOctet2": "[variables('ipOctet2')]",
-      "ipOctet3": "[variables('ipOctet3')]",
-      "datanodeIpOctet3":"[variables('datanodeIpOctet3')]",
-      "masterIP":"[variables('sa')]",
-      "workerIP":"[concat(variables('ipOctet01'), add(variables('ipOctet2'), div(variables('datanodeIpOctet3'), 255)), '.', mod(variables('datanodeIpOctet3'), 255))]",
+      "directorServerIPAddress":"[parameters('directorServerIPAddress')]",
+      "dnsServerIPAddress":"[parameters('directorServerIPAddress')]",
+      "dbServerIpAddress":"[parameters('mysqlServerIPAddress')]",
       "virtualNetworkName": "[parameters('virtualNetworkName')]",
       "virtualNetworkRGName":"[parameters('virtualNetworkRGName')]",
       "vnetNewOrExisting": "[parameters('vnetNewOrExisting')]",
@@ -300,57 +350,51 @@
     {
       "name": "shared-resources",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('templateAPIVersion')]",
+      "apiVersion": "[variables('version').templateAPIVersion]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
           "uri": "[variables('share-resourcesUri')]",
-          "contentVersion": "1.0.0.0"
+          "contentVersion": "[variables('version').contentVersion]"
         },
         "parameters": {
-          "resourceAPIVersion":{
-            "value":"[variables('resourceAPIVersion')]"
-          },
-          "location": {
-            "value": "[parameters('location')]"
+          "version":{
+            "value":"[variables('version')]"
           },
           "networkSpec": {
             "value": "[variables('networkSpec')]"
           },
-          "masterNodeASName": {
-            "value": "[variables('vmSpec').masterNodeASName]"
-          },
-          "dataNodeASName": {
-            "value": "[variables('vmSpec').dataNodeASName]"
+          "asName": {
+            "value": "[variables('vmSpec').asName]"
           }
         }
       }
     },
     {
-      "name": "master-node",
+      "name": "director-node",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('templateAPIVersion')]",
+      "apiVersion": "[variables('version').templateAPIVersion]",
       "dependsOn": [
         "Microsoft.Resources/deployments/shared-resources"
       ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(variables('scriptsUri'), '/master-node.json')]",
-          "contentVersion": "1.0.0.0"
+          "uri": "[concat(variables('scriptsUri'), '/director-node.json')]",
+          "contentVersion": "[variables('version').contentVersion]"
         },
         "parameters": {
           "vnetID":{
             "value":"[variables('VNetId')]"
           },
-          "resourceAPIVersion":{
-            "value":"[variables('resourceAPIVersion')]"
+          "version":{
+            "value":"[variables('version')]"
           },
           "dnsNamePrefix": {
             "value": "[parameters('dnsNamePrefix')]"
           },
-          "location": {
-            "value": "[parameters('location')]"
+          "dnsNameSuffix": {
+            "value": "[parameters('dnsNameSuffix')]"
           },
           "scriptsUri": {
             "value": "[variables('scriptsUri')]"
@@ -358,46 +402,40 @@
           "storageAccount": {
             "value": "[variables('storageAccount')]"
           },
-          "vmCount": {
-            "value": "[variables('clusterSpec').masterNodeCount]"
-          },
           "vmSpec": {
             "value": "[variables('vmSpec')]"
           },
           "networkSpec": {
             "value": "[variables('networkSpec')]"
-          },
-          "clusterSpec": {
-            "value": "[variables('clusterSpec')]"
           }
         }
       }
     },
     {
-      "name": "data-node",
+      "name": "mysql-node",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('templateAPIVersion')]",
+      "apiVersion": "[variables('version').templateAPIVersion]",
       "dependsOn": [
         "Microsoft.Resources/deployments/shared-resources"
       ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('data-nodeUri')]",
-          "contentVersion": "1.0.0.0"
+          "uri": "[concat(variables('scriptsUri'), '/mysql-node.json')]",
+          "contentVersion": "[variables('version').contentVersion]"
         },
         "parameters": {
           "vnetID":{
             "value":"[variables('VNetId')]"
           },
-          "resourceAPIVersion":{
-            "value":"[variables('resourceAPIVersion')]"
+          "version":{
+            "value":"[variables('version')]"
           },
           "dnsNamePrefix": {
             "value": "[parameters('dnsNamePrefix')]"
           },
-          "location": {
-            "value": "[parameters('location')]"
+          "dnsNameSuffix": {
+            "value": "[parameters('dnsNameSuffix')]"
           },
           "scriptsUri": {
             "value": "[variables('scriptsUri')]"
@@ -405,89 +443,87 @@
           "storageAccount": {
             "value": "[variables('storageAccount')]"
           },
-          "vmCount": {
-            "value": "[variables('clusterSpec').dataNodeCount]"
-          },
           "vmSpec": {
             "value": "[variables('vmSpec')]"
           },
           "networkSpec": {
             "value": "[variables('networkSpec')]"
-          },
-          "clusterSpec": {
-            "value": "[variables('clusterSpec')]"
           }
         }
       }
     },
     {
-      "name": "setup-cloudera",
+      "name": "update-vnet-dns",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('templateAPIVersion')]",
+      "apiVersion": "[variables('version').templateAPIVersion]",
       "dependsOn": [
-        "Microsoft.Resources/deployments/data-node",
-        "Microsoft.Resources/deployments/master-node"
+        "Microsoft.Resources/deployments/director-node"
       ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(variables('scriptsUri'), '/setup-cloudera.json')]",
-          "contentVersion": "1.0.0.0"
+          "uri": "[variables('vnetUri')]",
+          "contentVersion": "[variables('version').contentVersion]"
         },
         "parameters": {
-          "resourceAPIVersion":{
-            "value":"[variables('resourceAPIVersion')]"
+          "version":{
+            "value":"[variables('version')]"
           },
-          "dnsNamePrefix": {
-            "value": "[parameters('dnsNamePrefix')]"
+          "networkSpec": {
+            "value": "[variables('networkSpec')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "network-restart-dns",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('version').templateAPIVersion]",
+      "dependsOn": [
+        "Microsoft.Resources/deployments/update-vnet-dns"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('networkRestartUri')]",
+          "contentVersion": "[variables('version').contentVersion]"
+        },
+        "parameters": {
+          "version":{
+            "value":"[variables('version')]"
           },
-          "location": {
-            "value": "[parameters('location')]"
+          "vmName":{
+            "value": "[concat(parameters('dnsNamePrefix'), '-dir')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "prepare-conf-launch-cluster",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('version').templateAPIVersion]",
+      "dependsOn": [
+        "Microsoft.Resources/deployments/network-restart-dns",
+        "Microsoft.Resources/deployments/director-node"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('scriptsUri'), '/prepare-conf-launch-cluster.json')]",
+          "contentVersion": "[variables('version').contentVersion]"
+        },
+        "parameters": {
+          "version":{
+            "value":"[variables('version')]"
+          },
+          "vmName":{
+            "value": "[concat(parameters('dnsNamePrefix'), '-dir')]"
           },
           "scriptsUri": {
             "value": "[variables('scriptsUri')]"
           },
-          "vmSpec": {
-            "value": "[variables('vmSpec')]"
-          },
-          "networkSpec": {
-            "value": "[variables('networkSpec')]"
-          },
-          "clusterSpec": {
-            "value": "[variables('clusterSpec')]"
-          },
-          "fqdn": {
-            "value": "[reference('master-node').outputs.fqdn.value]"
-          },
-          "cmUsername": {
-            "value": "[parameters('cmUsername')]"
-          },
-          "cmPassword": {
-            "value": "[parameters('cmPassword')]"
-          },
-          "company": {
-            "value": "[parameters('Company')]"
-          },
-          "emailAddress": {
-            "value": "[parameters('emailAddress')]"
-          },
-          "businessPhone": {
-            "value": "[parameters('businessPhone')]"
-          },
-          "firstName": {
-            "value": "[parameters('firstName')]"
-          },
-          "lastName": {
-            "value": "[parameters('lastName')]"
-          },
-          "jobRole": {
-            "value": "[parameters('jobRole')]"
-          },
-          "jobFunction": {
-            "value": "[parameters('jobFunction')]"
-          },
-          "installCDH": {
-            "value": "[variables('installCDH')]"
+          "clusterParameters":{
+            "value": "[variables('clusterParameters')]"
           }
         }
       }

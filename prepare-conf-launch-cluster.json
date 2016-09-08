@@ -1,0 +1,39 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "version":{
+      "type":"object"
+    },
+    "vmName":{
+      "type":"string"
+    },
+    "scriptsUri":{
+      "type":"string"
+    },
+    "clusterParameters":{
+      "type":"secureObject"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('vmName'), '/prepareDisks')]",
+      "apiVersion": "[parameters('version').resourceAPIVersion]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publisher": "Microsoft.OSTCExtensions",
+        "type": "CustomScriptForLinux",
+        "typeHandlerVersion": "[parameters('version').typeHandlerVersion]",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[concat(parameters('scriptsUri'), '/scripts/prepare-director-conf.py')]",
+            "[concat(parameters('scriptsUri'), '/scripts/setup-default.py')]",
+            "[concat(parameters('scriptsUri'), '/scripts/azure.simple.conf')]"
+          ],
+          "commandToExecute": "[concat('python prepare-director-conf.py \"', parameters('clusterParameters').envName, '\" \"', parameters('clusterParameters').location, '\" \"', parameters('clusterParameters').subId, '\" \"', parameters('clusterParameters').tenantId, '\" \"', parameters('clusterParameters').clientId, '\" \"', parameters('clusterParameters').clientSecret, '\" \"', parameters('clusterParameters').adminUsername, '\" \"', parameters('clusterParameters').passPhrase, '\" \"', parameters('clusterParameters').privateKey, '\" \"', parameters('clusterParameters').networkSecurityGroupResourceGroup, '\" \"', parameters('clusterParameters').networkSecurityGroup, '\" \"', parameters('clusterParameters').virtualNetworkResourceGroup, '\" \"', parameters('clusterParameters').virtualNetwork, '\" \"', parameters('clusterParameters').subnetName, '\" \"', parameters('clusterParameters').computeResourceGroup, '\" \"', parameters('clusterParameters').hostFqdnSuffix, '\" \"', parameters('clusterParameters').dbAddress, '\" \"', parameters('clusterParameters').dbUsername, '\" \"', parameters('clusterParameters').dbPassword, '\" \"', parameters('clusterParameters').masterType, '\" \"', parameters('clusterParameters').workerType, '\" \"', parameters('clusterParameters').edgeType, '\" \"', parameters('clusterParameters').dirUsername, '\" \"', parameters('clusterParameters').dirPassword, '\"')]"}
+      }
+    }
+  ]
+}
