@@ -79,9 +79,65 @@
                         }
                     },
                     {
-                        "name": "clusterVmSize",
+                        "name": "masterVmSize",
                         "type": "Microsoft.Compute.SizeSelector",
-                        "label": "Virtual machine size",
+                        "label": "Master VM size",
+                        "defaultValue": "Standard_DS14",
+                        "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US, East US2, Central US, South Central US, West US, West Europe, North Europe, East Asia, Southeast Asia, Japan East, Japan West, Australia East, Australia Southeast.",
+                        "osPlatform": "Linux",
+                        "recommendedSizes": [
+                            "Standard_DS14",
+                            "Standard_DS14v2",
+                            "Standard_DS13"
+                        ],
+                        "constraints": {
+                            "required": true,
+                            "allowedSizes": [
+                                "Standard_DS13",
+                                "Standard_DS14",
+                                "Standard_DS12v2",
+                                "Standard_DS13v2",
+                                "Standard_DS14v2"
+                            ]
+                        },
+                        "imageReference": {
+                            "publisher": "cloudera",
+                            "offer": "cloudera-centos-6",
+                            "sku": "CLOUDERA-CENTOS-6"
+                        }
+                    },
+                    {
+                        "name": "workerVmSize",
+                        "type": "Microsoft.Compute.SizeSelector",
+                        "label": "Worker VM size",
+                        "defaultValue": "Standard_DS14",
+                        "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US, East US2, Central US, South Central US, West US, West Europe, North Europe, East Asia, Southeast Asia, Japan East, Japan West, Australia East, Australia Southeast.",
+                        "osPlatform": "Linux",
+                        "recommendedSizes": [
+                            "Standard_DS14",
+                            "Standard_DS14v2",
+                            "Standard_DS13"
+                        ],
+                        "constraints": {
+                            "required": true,
+                            "allowedSizes": [
+                                "Standard_DS13",
+                                "Standard_DS14",
+                                "Standard_DS12v2",
+                                "Standard_DS13v2",
+                                "Standard_DS14v2"
+                            ]
+                        },
+                        "imageReference": {
+                            "publisher": "cloudera",
+                            "offer": "cloudera-centos-6",
+                            "sku": "CLOUDERA-CENTOS-6"
+                        }
+                    },
+                    {
+                        "name": "edgeVmSize",
+                        "type": "Microsoft.Compute.SizeSelector",
+                        "label": "Edge VM size",
                         "defaultValue": "Standard_DS14",
                         "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US, East US2, Central US, South Central US, West US, West Europe, North Europe, East Asia, Southeast Asia, Japan East, Japan West, Australia East, Australia Southeast.",
                         "osPlatform": "Linux",
@@ -138,6 +194,45 @@
                                 }
                             }
                         }
+                     },
+                     {
+                        "name": "mysqlServerIPAddress",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "MySQL Server IP Address",
+                        "toolTip": "This IP is used for MySQL",
+                        "constraints": {
+                            "required": true
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        }
+                     },
+                     {
+                        "name": "dirUsername",
+                        "type": "Microsoft.Compute.UserNameTextBox",
+                        "label": "Director Username",
+                        "toolTip": "Username for Director.",
+                        "constraints": {
+                            "required": true
+                        },
+                        "osPlatform": "Linux"
+                    },
+                    {
+                        "name": "dirPassword",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Director Password",
+                            "confirmPassword": "Confirm password"
+                        },
+                        "toolTip": "Password for Director.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^(?:(?=.*[a-z])(?:(?=.*[A-Z])(?=.*[\\d\\W])|(?=.*\\W)(?=.*\\d))|(?=.*\\W)(?=.*[A-Z])(?=.*\\d)).{6,72}$",
+                            "validationMessage": "The password must be between 6 and 72 characters long, and contain characters from at least 3 of the following groups: uppercase characters, lowercase characters, numbers, and special characters."
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        }
                     },
                     {
                         "name": "dbUsername",
@@ -177,6 +272,15 @@
                 "bladeTitle": "Cloudera Director setup information",
                 "elements":
                 [
+                    {
+                        "name": "directorEnvironmentName",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Environment Name to be used by Director",
+                        "toolTip": "Environment Name to be used by Director",
+                        "constraints": {
+                            "required": true
+                        }
+                    },
                     {
                         "name": "subscriptionId",
                         "type": "Microsoft.Common.TextBox",
@@ -399,23 +503,36 @@
             }
         ],
         "outputs": {
-            "storageAccountPrefix": "[steps('infraInfo').storageAccount.prefix]",
-            "vmSize":"[steps('infraInfo').clusterVmSize]",
-            "dnsNamePrefix": "[steps('infraInfo').DNSPrefix.domainNameLabel]",
-            "virtualNetworkName":"[steps('infraInfo').vnetSpec.name]",
-            "subnetName":"[steps('infraInfo').vnetSpec.subnets.subnet1.name]",
-            "vnetNewOrExisting": "[steps('infraInfo').vnetSpec.newOrExisting]",
-            "virtualNetworkRGName": "[steps('infraInfo').vnetSpec.resourceGroup]",
-            "addressPrefix": "[steps('infraInfo').vnetSpec.addressPrefix]",
-            "subnetPrefix": "[steps('infraInfo').vnetSpec.subnets.subnet1.addressPrefix]",
-            "masterNodeIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
             "adminUserName": "[basics('username')]",
             "adminPassword": "[basics('password')]",
+            "dirUsername": "[steps('infraInfo').dirUsername]",
+            "dirPassword": "[steps('infraInfo').dirPassword]",
+            "dbUsername": "[steps('infraInfo').dbUsername]",
+            "dbPassword": "[steps('infraInfo').dbPassword]",
+            "subscriptionId":"[steps('clouderaSetupInformation').subscriptionId]",
+            "tenantId":"[steps('clouderaSetupInformation').tenantId]",
+            "clientId":"[steps('clouderaSetupInformation').clientId]",
+            "clientSecret":"[steps('clouderaSetupInformation').clientSecret]",
+            "passPhrase":"[steps('clouderaSetupInformation').passPhrase]",
+            "privateKey":"[steps('clouderaSetupInformation').privateKey]",
+            "masterType":"[steps('infraInfo').masterVmSize]",
+            "workerType":"[steps('infraInfo').workerVmSize]",
+            "edgeType":"[steps('infraInfo').edgeVmSize]",
+            "directorEnvironmentName":"[steps('clouderaSetupInformation').directorEnvironmentName]",
+            "dnsNamePrefix": "[steps('infraInfo').DNSPrefix.domainNameLabel]",
+            "dnsNameSuffix": "[steps('infraInfo').dnsNameSuffix]",
+            "virtualNetworkName":"[steps('infraInfo').vnetSpec.name]",
+            "vnetNewOrExisting": "[steps('infraInfo').vnetSpec.newOrExisting]",
+            "virtualNetworkRGName": "[steps('infraInfo').vnetSpec.resourceGroup]",
+            "subnetName":"[steps('infraInfo').vnetSpec.subnets.subnet1.name]",
+            "addressPrefix": "[steps('infraInfo').vnetSpec.addressPrefix]",
+            "subnetPrefix": "[steps('infraInfo').vnetSpec.subnets.subnet1.addressPrefix]",
+            "directorServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
+            "dnsServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
+            "mysqlServerIPAddress": "[steps('infraInfo').mysqlServerIPAddress]",
+           
+            
             "location": "[location()]",
-            "tshirtSize": "[steps('clouderaSetupInformation').clusterType]",
-            "numberOfDataNodes": "[steps('clouderaSetupInformation').datanodeCount]",
-            "cmUserName": "[steps('clouderaSetupInformation').cmUsername]",
-            "cmPassword": "[steps('clouderaSetupInformation').cmPassword]",
             "company": "[steps('userInformation').company]",
             "emailAddress": "[steps('userInformation').emailAddress]",
             "businessPhone": "[steps('userInformation').businessPhone]",
