@@ -55,7 +55,7 @@
                             "domainNameLabel": "Cloudera Director will be accessible from port 7189"
                         },
                         "defaultValue": {
-                            "publicIpAddressName": "cdhpip",
+                            "publicIpAddressName": "public_ip",
                             "domainNameLabel": "change_me_to_be_unique"
                         },
                         "constraints": {
@@ -79,81 +79,23 @@
                         }
                     },
                     {
-                        "name": "masterVmSize",
+                        "name": "directorVmSize",
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Master VM size",
-                        "defaultValue": "Standard_DS14",
-                        "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US, East US2, Central US, South Central US, West US, West Europe, North Europe, East Asia, Southeast Asia, Japan East, Japan West, Australia East, Australia Southeast.",
+                        "defaultValue": "Standard_DS12_v2",
+                        "toolTip": "The size of virtual machine for director server. Please choose a location that currently supports premium storage.",
                         "osPlatform": "Linux",
                         "recommendedSizes": [
-                            "Standard_DS14",
-                            "Standard_DS14v2",
-                            "Standard_DS13"
+                            "Standard_DS14"
                         ],
                         "constraints": {
                             "required": true,
                             "allowedSizes": [
                                 "Standard_DS13",
                                 "Standard_DS14",
-                                "Standard_DS12v2",
-                                "Standard_DS13v2",
-                                "Standard_DS14v2"
-                            ]
-                        },
-                        "imageReference": {
-                            "publisher": "cloudera",
-                            "offer": "cloudera-centos-6",
-                            "sku": "CLOUDERA-CENTOS-6"
-                        }
-                    },
-                    {
-                        "name": "workerVmSize",
-                        "type": "Microsoft.Compute.SizeSelector",
-                        "label": "Worker VM size",
-                        "defaultValue": "Standard_DS14",
-                        "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US, East US2, Central US, South Central US, West US, West Europe, North Europe, East Asia, Southeast Asia, Japan East, Japan West, Australia East, Australia Southeast.",
-                        "osPlatform": "Linux",
-                        "recommendedSizes": [
-                            "Standard_DS14",
-                            "Standard_DS14v2",
-                            "Standard_DS13"
-                        ],
-                        "constraints": {
-                            "required": true,
-                            "allowedSizes": [
-                                "Standard_DS13",
-                                "Standard_DS14",
-                                "Standard_DS12v2",
-                                "Standard_DS13v2",
-                                "Standard_DS14v2"
-                            ]
-                        },
-                        "imageReference": {
-                            "publisher": "cloudera",
-                            "offer": "cloudera-centos-6",
-                            "sku": "CLOUDERA-CENTOS-6"
-                        }
-                    },
-                    {
-                        "name": "edgeVmSize",
-                        "type": "Microsoft.Compute.SizeSelector",
-                        "label": "Edge VM size",
-                        "defaultValue": "Standard_DS14",
-                        "toolTip": "The size of virtual machine to provision for each node. Choose a location that currently supports premium storage: East US, East US2, Central US, South Central US, West US, West Europe, North Europe, East Asia, Southeast Asia, Japan East, Japan West, Australia East, Australia Southeast.",
-                        "osPlatform": "Linux",
-                        "recommendedSizes": [
-                            "Standard_DS14",
-                            "Standard_DS14v2",
-                            "Standard_DS13"
-                        ],
-                        "constraints": {
-                            "required": true,
-                            "allowedSizes": [
-                                "Standard_DS13",
-                                "Standard_DS14",
-                                "Standard_DS12v2",
-                                "Standard_DS13v2",
-                                "Standard_DS14v2"
+                                "Standard_DS12_v2",
+                                "Standard_DS13_v2",
+                                "Standard_DS14_v2"
                             ]
                         },
                         "imageReference": {
@@ -184,7 +126,7 @@
                             "subnet1": {
                                 "label": "Cloudera subnet",
                                 "defaultValue": {
-                                    "name": "clouderasubnet",
+                                    "name": "default",
                                     "addressPrefixSize": "/16"
                                 },
                                 "constraints": {
@@ -193,18 +135,6 @@
                                     "requireContiguousAddresses": true
                                 }
                             }
-                        }
-                     },
-                     {
-                        "name": "mysqlServerIPAddress",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "MySQL Server IP Address",
-                        "toolTip": "This IP is used for MySQL",
-                        "constraints": {
-                            "required": true
-                        },
-                        "options": {
-                            "hideConfirmation": false
                         }
                      },
                      {
@@ -358,14 +288,17 @@
                     },
                     {
                         "name": "passPhrase",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Passphrase to decode private key",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Passphrase to decode private key",
+                            "confirmPassword": "Confirm Passphrase"
+                        },
                         "toolTip": "leave it blank if not needed",
                         "constraints": {
                             "required": false
                         },
                         "options": {
-                            "hideConfirmation": false
+                            "hideConfirmation": true
                         }
                     }
 
@@ -515,6 +448,7 @@
             "clientSecret":"[steps('clouderaSetupInformation').clientSecret]",
             "passPhrase":"[steps('clouderaSetupInformation').passPhrase]",
             "privateKey":"[steps('clouderaSetupInformation').privateKey]",
+            "directorSize":"[steps('infraInfo').directorVmSize]",
             "masterType":"[steps('infraInfo').masterVmSize]",
             "workerType":"[steps('infraInfo').workerVmSize]",
             "edgeType":"[steps('infraInfo').edgeVmSize]",
@@ -528,8 +462,6 @@
             "addressPrefix": "[steps('infraInfo').vnetSpec.addressPrefix]",
             "subnetPrefix": "[steps('infraInfo').vnetSpec.subnets.subnet1.addressPrefix]",
             "directorServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
-            "dnsServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
-            "mysqlServerIPAddress": "[steps('infraInfo').mysqlServerIPAddress]",
            
             "company": "[steps('userInformation').company]",
             "emailAddress": "[steps('userInformation').emailAddress]",
