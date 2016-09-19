@@ -140,18 +140,6 @@
                         }
                      },
                      {
-                        "name": "mysqlServerIPAddress",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "MySQL Server IP Address",
-                        "toolTip": "This IP is used for MySQL",
-                        "constraints": {
-                            "required": true
-                        },
-                        "options": {
-                            "hideConfirmation": false
-                        }
-                     },
-                     {
                         "name": "dirUsername",
                         "type": "Microsoft.Compute.UserNameTextBox",
                         "label": "Director Username",
@@ -283,36 +271,7 @@
                         "options": {
                             "hideConfirmation": true
                         }
-                    },
-                    {
-                        "name": "privateKey",
-                        "type": "Microsoft.Common.PasswordBox",
-                        "label": {
-                            "password": "Private Key",
-                            "confirmPassword": "Confirm Client Secret"
-                        },
-                        "toolTip": "Private key to be used by Director",
-                        "constraints": {
-                            "required": true,
-                            "validationMessage": "The subscription must be a valid UUID"
-                        },
-                        "options": {
-                            "hideConfirmation": true
-                        }
-                    },
-                    {
-                        "name": "passPhrase",
-                        "type": "Microsoft.Common.TextBox",
-                        "label": "Passphrase to decode private key",
-                        "toolTip": "leave it blank if not needed",
-                        "constraints": {
-                            "required": false
-                        },
-                        "options": {
-                            "hideConfirmation": false
-                        }
                     }
-
                 ]
             },
             {
@@ -457,8 +416,6 @@
             "tenantId": "[steps('clouderaSetupInformation').tenantId]",
             "clientId": "[steps('clouderaSetupInformation').clientId]",
             "clientSecret": "[steps('clouderaSetupInformation').clientSecret]",
-            "passPhrase": "[steps('clouderaSetupInformation').passPhrase]",
-            "privateKey": "[steps('clouderaSetupInformation').privateKey]",
             "directorSize": "[steps('infraInfo').directorVmSize]",
             "directorEnvironmentName":"[steps('clouderaSetupInformation').directorEnvironmentName]",
             "dnsNamePrefix": "[steps('infraInfo').DNSPrefix.domainNameLabel]",
@@ -470,8 +427,6 @@
             "addressPrefix": "[steps('infraInfo').vnetSpec.addressPrefix]",
             "subnetPrefix": "[steps('infraInfo').vnetSpec.subnets.subnet1.addressPrefix]",
             "directorServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
-            "dnsServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
-            "mysqlServerIPAddress": "[steps('infraInfo').mysqlServerIPAddress]",
             "company": "[steps('userInformation').company]",
             "emailAddress": "[steps('userInformation').emailAddress]",
             "businessPhone": "[steps('userInformation').businessPhone]",
