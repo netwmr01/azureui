@@ -7,19 +7,8 @@
     },
     "networkSpec": {
       "type": "object"
-    },
-    "asName": {
-      "type": "string"
     }
   },
   "variables": {},
-  "resources": [
-    {
-      "apiVersion": "[parameters('version').resourceAPIVersion']",
-      "type": "Microsoft.Compute/availabilitySets",
-      "name": "[parameters('asName')]",
-      "location": "[resourceGroup().location]",
-      "properties": { }
-    }
-  ]
+  "resources": []
 }

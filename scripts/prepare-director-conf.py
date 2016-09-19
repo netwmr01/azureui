@@ -1,22 +1,83 @@
+#! /usr/bin/env python
+
+# Copyright (c) 2016 Cloudera, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Simple script that shows how to use the Cloudera Director API to initialize
+# the environment and instance templates
+
 from pyhocon import ConfigFactory
 from pyhocon import tool
-from urllib2 import HTTPError
-from cloudera.director.latest.models import Login, User
-from cloudera.director.common.client import ApiClient
-from cloudera.director.latest import AuthenticationApi, UsersApi
-import sys
-import os
+import commands
 import logging
+import sys
+from optparse import OptionParser
 
-#loging starts
-logging.basicConfig(filename='/tmp/prepare-director-conf.log', level=logging.DEBUG)
+# logging starts
+logging.basicConfig(filename='/var/log/prepare-director-conf.log', level=logging.DEBUG)
 logging.info('started')
 
-class ExitCodes(object):
-    OK = 0
-    DUPLICATE_USER = 10
+DIRUSERNAME = 'admin'
+DIRPASSWORD = 'admin'
+DEFAULT_BASE_DIR = "/home"
+DEFAULT_CONF_NAME = "azure.simple.expanded.conf"
 
-def setInstanceParameters (section, machineType, networkSecurityGroupResourceGroup, networkSecurityGroup, virtualNetworkResourceGroup,
+
+def execAndLog(command):
+  status, output = commands.getstatusoutput(command)
+  if status != 0:
+    logging.error(command + " has none zero return status: "+str(status))
+    logging.error(output)
+    sys.exit(status)
+  logging.info(output)
+
+
+def parse_options():
+
+    parser = OptionParser()
+
+    parser.add_option('--envName', dest='env', type="string", help='Environment name')
+    parser.add_option('--region', dest='region', type="string", help='Set Azure Region')
+    parser.add_option('--subId',  dest='subId', type="string", help='Set Azure Subscription ID')
+    parser.add_option('--tenantId', dest='tenantId', type="string", help='Set Azure tenant ID')
+    parser.add_option('--clientId', dest='clientId', type="string", help='Set Azure client ID')
+    parser.add_option('--clientSecret', dest='clientSecret', type="string", help='Set Azure client secret')
+    parser.add_option('--username', dest='username', type="string", help='Set key file name')
+    parser.add_option('--keyFileName', dest='keyFileName', type="string", help='Set company')
+    parser.add_option('--networkSecurityGroupResourceGroup', dest='networkSecurityGroupResourceGroup', type="string",
+                      help='Set NetworkSecurityGroup ResourceGroup')
+    parser.add_option('--networkSecurityGroup', dest='networkSecurityGroup', type="string", help='Set NetworkSecurityGroup')
+    parser.add_option('--virtualNetworkResourceGroup', dest='virtualNetworkResourceGroup', type="string",
+                      help='Set virtualNetworkResourceGroup')
+    parser.add_option('--virtualNetwork', dest='virtualNetwork', type="string", help='Set virtualNetwork')
+    parser.add_option('--subnetName', dest='subnetName', type="string", help='Set subnetName')
+    parser.add_option('--computeResourceGroup', dest='computeResourceGroup', type="string", help='Set computeResourceGroup')
+    parser.add_option('--hostFqdnSuffix', dest='hostFqdnSuffix', type="string", help='Set hostFqdnSuffix')
+    parser.add_option('--dbHostOrIP', dest='dbHostOrIP', type="string", help='Set dbHostOrIP')
+    parser.add_option('--dbUsername', dest='dbUsername', type="string", help='Set dbUsername')
+    parser.add_option('--dbPassword', dest='dbPassword', type="string", help='Set dbPassword')
+    parser.add_option('--masterType', dest='masterType', type="string", help='Set masterType')
+    parser.add_option('--workerType', dest='workerType', type="string", help='Set workerType')
+    parser.add_option('--edgeType', dest='edgeType', type="string", help='Set edgeType')
+
+
+    (options, args) = parser.parse_args()
+
+    return options
+
+
+def setInstanceParameters (conf, section, machineType, networkSecurityGroupResourceGroup, networkSecurityGroup, virtualNetworkResourceGroup,
                            virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix):
   conf.put(section+'.type', machineType)
   conf.put(section+'.networkSecurityGroupResourceGroup', networkSecurityGroupResourceGroup)
@@ -27,117 +88,92 @@ def setInstanceParameters (section, machineType, networkSecurityGroupResourceGro
   conf.put(section+'.computeResourceGroup', computeResourceGroup)
   conf.put(section+'.hostFqdnSuffix', hostFqdnSuffix)
 
-def writeToFile(privateKey, keyFileName):
-  target = open(keyFileName, 'w')
-  target.truncate()
-  target.write(privateKey)
-  target.close()
+def generateKeyToFile(keyFileName, username):
+  command='ssh-keygen -f %s -t rsa -q -N ""'%(keyFileName)
+  execAndLog(command)
+  execAndLog("chown "+username+" "+keyFileName)
+  execAndLog('chmod 644 %s'%(keyFileName))
 
-def secure_user(username, password):
-    """
-    Create a new user account
-    @param args: dict of parsed command line arguments that include
-                 an username and a password for the new account
-    @return:     script exit code
-    """
-    # Cloudera Director server runs at http://127.0.0.1:7189
-    try:
-      client = ApiClient("http://localhost:7189")
-      AuthenticationApi(client).login(Login(username="admin", password="admin"))
-      #create new login base on user input
-      users_api = UsersApi(client)
-      users_api.create(User(username=username, password=password, enabled=True, roles=["ROLE_ADMIN"]))
+def prepareConf(options):
+  conf = ConfigFactory.parse_file('azure.simple.conf')
+  logging.info('parsed conf')
+  name = options.env
+  region = options.region
+  subscriptionId = options.subId
+  tenantId = options.tenantId
+  clientId = options.clientId
+  clientSecret = options.clientSecret
 
-      # delete default user access
-      AuthenticationApi(client).login(Login(username=username, password=password))
-      users_api.delete("admin")
-      return ExitCodes.OK
+  username = options.username
+  keyFileName = options.keyFileName
+  generateKeyToFile(keyFileName, username)
 
-    except HTTPError, e:
-      if  e.code == 302:  # found
-        # sys.stderr.write("Cannot create duplicate user '%s'.\n" % (username,))
-        return ExitCodes.DUPLICATE_USER
-      else:
-        raise e
+  networkSecurityGroupResourceGroup = options.networkSecurityGroupResourceGroup
+  networkSecurityGroup = options.networkSecurityGroup
+  virtualNetworkResourceGroup = options.virtualNetworkResourceGroup
+  virtualNetwork = options.virtualNetwork
+  subnetName = options.subnetName
+  computeResourceGroup = options.computeResourceGroup
+  hostFqdnSuffix = options.hostFqdnSuffix
 
-conf = ConfigFactory.parse_file('azure.simple.conf')
-logging.info('parsed conf')
-name = sys.argv[1]
-region = sys.argv[2]
-subscriptionId = sys.argv[3]
-tenantId = sys.argv[4]
-clientId = sys.argv[5]
-clientSecret = sys.argv[6]
+  dbHostOrIP = options.dbHostOrIP
+  dbUsername = options.dbUsername
+  dbPassword = options.dbPassword
 
-username = sys.argv[7]
-passphrase = sys.argv[8]
-privateKey = sys.argv[9]
-keyFileName = "/tmp/keyfile"
-writeToFile(privateKey, keyFileName)
-logging.info(privateKey)
+  masterType = options.masterType.upper()
+  workerType = options.workerType.upper()
+  edgeType = options.edgeType.upper()
 
-networkSecuritGroupResourceGroup = sys.argv[10]
-networkSecurityGroup = sys.argv[11]
-virtualNetworkResourceGroup = sys.argv[12]
-virtualNetwork = sys.argv[13]
-subnetName = sys.argv[14]
-computeResourceGroup = sys.argv[15]
-hostFqdnSuffix = sys.argv[16]
+  logging.info('parameters assigned')
 
-dbHostOrIP = sys.argv[17]
-dbUsername = sys.argv[18]
-dbPassword = sys.argv[19]
+  conf.put('name', name)
+  conf.put('provider.region', region)
+  conf.put('provider.subscriptionId', subscriptionId)
+  conf.put('provider.tenantId', tenantId)
+  conf.put('provider.clientId', clientId)
+  conf.put('provider.clientSecret', clientSecret)
 
-masterType = sys.argv[20].upper()
-workerType = sys.argv[21].upper()
-edgeType = sys.argv[22].upper()
-dirUsername = sys.argv[23]
-dirPassword = sys.argv[24]
-
-logging.info('parameters assigned')
-
-secure_user(dirUsername, dirPassword)
-logging.info('director server secured')
-
-conf.put('name', name)
-conf.put('provider.region', region)
-conf.put('provider.subscriptionId', subscriptionId)
-conf.put('provider.tenantId', tenantId)
-conf.put('provider.clientId', clientId)
-conf.put('provider.clientSecret', clientSecret)
-
-conf.put('ssh.username', username)
-if passphrase:
-  conf.put('ssh.passphrase', passphrase)
-conf.put('ssh.privateKey', keyFileName)
+  conf.put('ssh.username', username)
+  conf.put('ssh.privateKey', keyFileName)
 
 
-setInstanceParameters('instances.ds14-master', masterType, networkSecuritGroupResourceGroup, networkSecurityGroup,
-                      virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
-setInstanceParameters('instances.ds14-worker', workerType, networkSecuritGroupResourceGroup, networkSecurityGroup,
-                      virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
-setInstanceParameters('instances.ds14-edge', edgeType, networkSecuritGroupResourceGroup, networkSecurityGroup,
-                      virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
-setInstanceParameters('cloudera-manager.instance', edgeType, networkSecuritGroupResourceGroup, networkSecurityGroup,
-                      virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
-setInstanceParameters('cluster.masters.instance', masterType, networkSecuritGroupResourceGroup, networkSecurityGroup,
-                      virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
-setInstanceParameters('cluster.workers.instance', masterType, networkSecuritGroupResourceGroup, networkSecurityGroup,
-                      virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
+  setInstanceParameters(conf, 'instances.ds14-master', masterType, networkSecurityGroupResourceGroup, networkSecurityGroup,
+                        virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
+  setInstanceParameters(conf, 'instances.ds14-worker', workerType, networkSecurityGroupResourceGroup, networkSecurityGroup,
+                        virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
+  setInstanceParameters(conf, 'instances.ds14-edge', edgeType, networkSecurityGroupResourceGroup, networkSecurityGroup,
+                        virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
+  setInstanceParameters(conf, 'cloudera-manager.instance', edgeType, networkSecurityGroupResourceGroup, networkSecurityGroup,
+                        virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
+  setInstanceParameters(conf, 'cluster.masters.instance', masterType, networkSecurityGroupResourceGroup, networkSecurityGroup,
+                        virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
+  setInstanceParameters(conf, 'cluster.workers.instance', masterType, networkSecurityGroupResourceGroup, networkSecurityGroup,
+                        virtualNetworkResourceGroup, virtualNetwork, subnetName, computeResourceGroup, hostFqdnSuffix)
 
-conf.put('databaseServers.mysqlprod1.host', dbHostOrIP)
-conf.put('databaseServers.mysqlprod1.user', dbUsername)
-conf.put('databaseServers.mysqlprod1.password', dbPassword)
+  conf.put('databaseServers.mysqlprod1.host', dbHostOrIP)
+  conf.put('databaseServers.mysqlprod1.user', dbUsername)
+  conf.put('databaseServers.mysqlprod1.password', dbPassword)
 
-logging.info('conf value replaced')
+  logging.info('conf value replaced')
 
-with open("/tmp/azure.conf", "w") as text_file:
-    text_file.write(tool.HOCONConverter.to_hocon(conf))
+  confLocation = DEFAULT_BASE_DIR+"/"+username+"/"+DEFAULT_CONF_NAME
+  with open(confLocation, "w") as text_file:
+      text_file.write(tool.HOCONConverter.to_hocon(conf))
 
-logging.info("conf file has been written")
+  logging.info("conf file has been written")
 
-command="python setup-default.py --admin-username %s --admin-password %s /tmp/azure.conf"%(dirUsername, dirPassword)
-logging.info(command)
-os.system(command)
+  command = "python setup-default.py --admin-username %s --admin-password %s %s"%(DIRUSERNAME, DIRPASSWORD, confLocation)
+  execAndLog(command)
 
-logging.info('finish')
+  logging.info('finish')
+
+def main():
+    # Parse user options
+    logging.info("parse_options")
+    options = parse_options()
+    prepareConf(options)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

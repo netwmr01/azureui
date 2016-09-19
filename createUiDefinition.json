@@ -72,7 +72,9 @@
                         "label": "DNS suffix ",
                         "toolTip": "This suffix is used internally within the vnet",
                         "constraints": {
-                            "required": true
+                            "required": true,
+                            "regex": "^(?=.{3,37}$)([a-z][a-z0-9-]{1,35}[a-z0-9])(.[a-z][a-z0-9-]{1,35}[a-z0-9])*$",
+                            "validationMessage": "The DNS suffix must be between 3 and 37 characters long, including periods. Each label has these requirements: must be 3 or more characters long; the first character must be a letter; it can contain only lowercase letters, numbers, and hyphens; and the last character must be a letter or number. Regex: ^(?=.{3,37}$)([a-z][a-z0-9-]{1,35}[a-z0-9])(\\.[a-z][a-z0-9-]{1,35}[a-z0-9])*$"
                         },
                         "options": {
                             "hideConfirmation": false
@@ -81,12 +83,12 @@
                     {
                         "name": "directorVmSize",
                         "type": "Microsoft.Compute.SizeSelector",
-                        "label": "Master VM size",
+                        "label": "Director Server VM size",
                         "defaultValue": "Standard_DS12_v2",
-                        "toolTip": "The size of virtual machine for director server. Please choose a location that currently supports premium storage.",
+                        "toolTip": "The size of virtual machine for Director Server. Choose a location that currently supports premium storage.",
                         "osPlatform": "Linux",
                         "recommendedSizes": [
-                            "Standard_DS14"
+                            "Standard_DS12_v2"
                         ],
                         "constraints": {
                             "required": true,
@@ -108,11 +110,11 @@
                         "name": "vnetSpec",
                         "type": "Microsoft.Network.VirtualNetworkCombo",
                         "label": {
-                            "virtualNetwork": "Virtual network",
+                            "virtualNetwork": "New Virtual network",
                             "subnets": "Subnets"
                         },
                         "toolTip": {
-                            "virtualNetwork": "",
+                            "virtualNetwork": "Can only deploy into a new Virtual Network",
                             "subnets": ""
                         },
                         "defaultValue": {
@@ -126,7 +128,7 @@
                             "subnet1": {
                                 "label": "Cloudera subnet",
                                 "defaultValue": {
-                                    "name": "default",
+                                    "name": "clouderasubnet",
                                     "addressPrefixSize": "/16"
                                 },
                                 "constraints": {
@@ -135,6 +137,18 @@
                                     "requireContiguousAddresses": true
                                 }
                             }
+                        }
+                     },
+                     {
+                        "name": "mysqlServerIPAddress",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "MySQL Server IP Address",
+                        "toolTip": "This IP is used for MySQL",
+                        "constraints": {
+                            "required": true
+                        },
+                        "options": {
+                            "hideConfirmation": false
                         }
                      },
                      {
@@ -288,17 +302,14 @@
                     },
                     {
                         "name": "passPhrase",
-                        "type": "Microsoft.Common.PasswordBox",
-                        "label": {
-                            "password": "Passphrase to decode private key",
-                            "confirmPassword": "Confirm Passphrase"
-                        },
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Passphrase to decode private key",
                         "toolTip": "leave it blank if not needed",
                         "constraints": {
                             "required": false
                         },
                         "options": {
-                            "hideConfirmation": true
+                            "hideConfirmation": false
                         }
                     }
 
@@ -442,16 +453,13 @@
             "dirPassword": "[steps('infraInfo').dirPassword]",
             "dbUsername": "[steps('infraInfo').dbUsername]",
             "dbPassword": "[steps('infraInfo').dbPassword]",
-            "subscriptionId":"[steps('clouderaSetupInformation').subscriptionId]",
-            "tenantId":"[steps('clouderaSetupInformation').tenantId]",
-            "clientId":"[steps('clouderaSetupInformation').clientId]",
-            "clientSecret":"[steps('clouderaSetupInformation').clientSecret]",
-            "passPhrase":"[steps('clouderaSetupInformation').passPhrase]",
-            "privateKey":"[steps('clouderaSetupInformation').privateKey]",
-            "directorSize":"[steps('infraInfo').directorVmSize]",
-            "masterType":"[steps('infraInfo').masterVmSize]",
-            "workerType":"[steps('infraInfo').workerVmSize]",
-            "edgeType":"[steps('infraInfo').edgeVmSize]",
+            "subscriptionId": "[steps('clouderaSetupInformation').subscriptionId]",
+            "tenantId": "[steps('clouderaSetupInformation').tenantId]",
+            "clientId": "[steps('clouderaSetupInformation').clientId]",
+            "clientSecret": "[steps('clouderaSetupInformation').clientSecret]",
+            "passPhrase": "[steps('clouderaSetupInformation').passPhrase]",
+            "privateKey": "[steps('clouderaSetupInformation').privateKey]",
+            "directorSize": "[steps('infraInfo').directorVmSize]",
             "directorEnvironmentName":"[steps('clouderaSetupInformation').directorEnvironmentName]",
             "dnsNamePrefix": "[steps('infraInfo').DNSPrefix.domainNameLabel]",
             "dnsNameSuffix": "[steps('infraInfo').dnsNameSuffix]",
@@ -462,7 +470,8 @@
             "addressPrefix": "[steps('infraInfo').vnetSpec.addressPrefix]",
             "subnetPrefix": "[steps('infraInfo').vnetSpec.subnets.subnet1.addressPrefix]",
             "directorServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
-           
+            "dnsServerIPAddress": "[steps('infraInfo').vnetSpec.subnets.subnet1.startAddress]",
+            "mysqlServerIPAddress": "[steps('infraInfo').mysqlServerIPAddress]",
             "company": "[steps('userInformation').company]",
             "emailAddress": "[steps('userInformation').emailAddress]",
             "businessPhone": "[steps('userInformation').businessPhone]",

@@ -15,19 +15,6 @@
         "description": "Admin password for the VMs (A mix of upper and lower-case characters, digits and symbols)"
       }
     },
-    "dirUsername": {
-      "type": "string",
-      "defaultValue": "diradmin",
-      "metadata": {
-        "description": "User name for the Cloudera Director Server"
-      }
-    },
-    "dirPassword": {
-      "type": "securestring",
-      "metadata": {
-        "description": "password for the Cloudera Director (A mix of upper and lower-case characters, digits and symbols)"
-      }
-    },
     "dbUsername": {
       "type": "string",
       "defaultValue": "dbadmin",
@@ -65,21 +52,16 @@
         "description": ""
       }
     },
-    "passPhrase":{
-      "type": "securestring",
-      "metadata": {
-        "description": ""
-      }
-    },
-    "privateKey":{
+    "directorSize": {
       "type": "string",
+      "defaultValue": "Standard_DS12_v2",
       "metadata": {
-        "description": ""
+        "description": "The size of the VM for Director server"
       }
     },
     "masterType": {
       "type": "string",
-      "defaultValue": "Standard_DS13",
+      "defaultValue": "Standard_DS14",
       "metadata": {
         "description": "The size of the VMs deployed as Master(s) in the cluster"
       }
@@ -117,13 +99,6 @@
         "description": "Unique DNS suffix where the VMs will be exposed"
         }
     },
-    "storageAccountType": {
-      "type": "string",
-      "defaultValue": "Standard_LRS",
-      "metadata": {
-        "description": "The type of the Storage Account to be created (Default to Standard_LRS)"
-      }
-    },
     "virtualNetworkName": {
       "type": "string",
       "defaultValue": "clouderavnet",
@@ -135,8 +110,7 @@
       "type" : "string",
       "defaultValue": "new",
       "allowedValues": [
-        "new",
-        "existing"
+        "new"
       ],
       "metadata": {
         "description": "Indicator for new or exiting Virtual Network"
@@ -177,21 +151,6 @@
         "description": "IP address for the director server"
       }
     },
-    "dnsServerIPAddress": {
-      "type": "string",
-      "defaultValue": "10.3.0.4",
-      "metadata": {
-        "description": "IP address for the dns server"
-      }
-    },
-    "mysqlServerIPAddress": {
-      "type": "string",
-      "defaultValue": "10.3.0.5",
-      "metadata": {
-        "description": "IP address for the mysql server"
-      }
-    },
-
     "company": {
       "type": "string",
       "defaultValue": "Company",
@@ -292,10 +251,10 @@
     "scriptsUri": "[parameters('artifactsBaseUrl')]",
     "share-resourcesUri": "[concat(variables('scriptsUri'), '/shared-resources-', parameters('vnetNewOrExisting'), '-vnet.json')]",
     "vnetUri": "[concat(variables('scriptsUri'), '/update-', parameters('vnetNewOrExisting'), '-vnet-dns.json')]",
-    "networkRestartUri": "[concat(variables('scriptsUri'), '/network-restart.json')]",
+    "networkRestartUri": "[concat(variables('scriptsUri'), '/network-restart-', parameters('vnetNewOrExisting'), '-vnet.json')]",
     "storageAccount": {
       "prefix": "[concat(uniquestring(resourceGroup().id),'storage')]",
-      "type": "[parameters('storageAccountType')]"
+      "type": "Premium_LRS"
     },
     "clusterParameters":{
       "envName":"[parameters('directorEnvironmentName')]",
@@ -305,8 +264,6 @@
       "clientId":"[parameters('clientId')]",
       "clientSecret":"[parameters('clientSecret')]",
       "adminUsername":"[parameters('adminUsername')]",
-      "passPhrase":"[parameters('passPhrase')]",
-      "privateKey":"[parameters('privateKey')]",
       "networkSecurityGroupResourceGroup":"[resourceGroup().name]",
       "networkSecurityGroup":"[concat(parameters('virtualNetworkName'),'-nsg')]",
       "virtualNetworkResourceGroup":"[resourceGroup().name]",
@@ -314,20 +271,26 @@
       "subnetName":"[parameters('subnetName')]",
       "computeResourceGroup":"[resourceGroup().name]",
       "hostFqdnSuffix":"[parameters('dnsNameSuffix')]",
-      "dbAddress":"[parameters('mysqlServerIPAddress')]",
+      "dbAddress":"[parameters('directorServerIPAddress')]",
       "dbUsername":"[parameters('dbUsername')]",
       "dbPassword":"[parameters('dbPassword')]",
       "masterType":"[parameters('masterType')]",
       "workerType":"[parameters('workerType')]",
-      "edgeType":"[parameters('edgeType')]",
-      "dirUsername":"[parameters('dirUsername')]",
-      "dirPassword":"[parameters('dirPassword')]"
+      "edgeType":"[parameters('edgeType')]"
+    },
+    "userInfo":{
+      "company":"[parameters('company')]",
+      "emailAddress": "[parameters('emailAddress')]",
+      "businessPhone": "[parameters('businessPhone')]",
+      "firstName": "[parameters('firstName')]",
+      "lastName": "[parameters('lastName')]",
+      "jobRole": "[parameters('jobRole')]",
+      "jobFunction": "[parameters('jobFunction')]"
     },
     "vmSpec": {
-      "vmSize": "Standard_D3",
+      "vmSize": "[parameters('directorSize')]",
       "adminUsername": "[parameters('adminUsername')]",
       "adminPassword": "[parameters('adminPassword')]",
-      "asName": "[concat(parameters('dnsNamePrefix'), '-as')]",
       "dbUsername": "[parameters('dbUsername')]",
       "dbPassword": "[parameters('dbPassword')]"
     },
@@ -336,7 +299,7 @@
       "subnetPrefix": "[variables('subnetPrefix')]",
       "directorServerIPAddress":"[parameters('directorServerIPAddress')]",
       "dnsServerIPAddress":"[parameters('directorServerIPAddress')]",
-      "dbServerIpAddress":"[parameters('mysqlServerIPAddress')]",
+      "dbServerIpAddress":"[parameters('directorServerIPAddress')]",
       "virtualNetworkName": "[parameters('virtualNetworkName')]",
       "virtualNetworkRGName":"[parameters('virtualNetworkRGName')]",
       "vnetNewOrExisting": "[parameters('vnetNewOrExisting')]",
@@ -348,7 +311,7 @@
   },
   "resources": [
     {
-      "name": "shared-resources",
+      "name": "shared-vnet",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "[variables('version').templateAPIVersion]",
       "properties": {
@@ -363,9 +326,6 @@
           },
           "networkSpec": {
             "value": "[variables('networkSpec')]"
-          },
-          "asName": {
-            "value": "[variables('vmSpec').asName]"
           }
         }
       }
@@ -375,12 +335,12 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "[variables('version').templateAPIVersion]",
       "dependsOn": [
-        "Microsoft.Resources/deployments/shared-resources"
+        "Microsoft.Resources/deployments/shared-vnet"
       ],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(variables('scriptsUri'), '/director-node.json')]",
+          "uri": "[concat(variables('scriptsUri'), '/director-node-and-shared-resources.json')]",
           "contentVersion": "[variables('version').contentVersion]"
         },
         "parameters": {
@@ -407,47 +367,9 @@
           },
           "networkSpec": {
             "value": "[variables('networkSpec')]"
-          }
-        }
-      }
-    },
-    {
-      "name": "mysql-node",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('version').templateAPIVersion]",
-      "dependsOn": [
-        "Microsoft.Resources/deployments/shared-resources"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[concat(variables('scriptsUri'), '/mysql-node.json')]",
-          "contentVersion": "[variables('version').contentVersion]"
-        },
-        "parameters": {
-          "vnetID":{
-            "value":"[variables('VNetId')]"
           },
-          "version":{
-            "value":"[variables('version')]"
-          },
-          "dnsNamePrefix": {
-            "value": "[parameters('dnsNamePrefix')]"
-          },
-          "dnsNameSuffix": {
-            "value": "[parameters('dnsNameSuffix')]"
-          },
-          "scriptsUri": {
-            "value": "[variables('scriptsUri')]"
-          },
-          "storageAccount": {
-            "value": "[variables('storageAccount')]"
-          },
-          "vmSpec": {
-            "value": "[variables('vmSpec')]"
-          },
-          "networkSpec": {
-            "value": "[variables('networkSpec')]"
+          "userInfo": {
+            "value": "[variables('userInfo')]"
           }
         }
       }
@@ -494,6 +416,12 @@
           },
           "vmName":{
             "value": "[concat(parameters('dnsNamePrefix'), '-dir')]"
+          },
+          "scriptsUri": {
+            "value": "[variables('scriptsUri')]"
+          },
+          "dnsServerIPAddress": {
+            "value": "[parameters('directorServerIPAddress')]"
           }
         }
       }

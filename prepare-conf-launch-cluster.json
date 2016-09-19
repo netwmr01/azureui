@@ -31,8 +31,15 @@
             "[concat(parameters('scriptsUri'), '/scripts/prepare-director-conf.py')]",
             "[concat(parameters('scriptsUri'), '/scripts/setup-default.py')]",
             "[concat(parameters('scriptsUri'), '/scripts/azure.simple.conf')]"
-          ],
-          "commandToExecute": "[concat('python prepare-director-conf.py \"', parameters('clusterParameters').envName, '\" \"', parameters('clusterParameters').location, '\" \"', parameters('clusterParameters').subId, '\" \"', parameters('clusterParameters').tenantId, '\" \"', parameters('clusterParameters').clientId, '\" \"', parameters('clusterParameters').clientSecret, '\" \"', parameters('clusterParameters').adminUsername, '\" \"', parameters('clusterParameters').passPhrase, '\" \"', parameters('clusterParameters').privateKey, '\" \"', parameters('clusterParameters').networkSecurityGroupResourceGroup, '\" \"', parameters('clusterParameters').networkSecurityGroup, '\" \"', parameters('clusterParameters').virtualNetworkResourceGroup, '\" \"', parameters('clusterParameters').virtualNetwork, '\" \"', parameters('clusterParameters').subnetName, '\" \"', parameters('clusterParameters').computeResourceGroup, '\" \"', parameters('clusterParameters').hostFqdnSuffix, '\" \"', parameters('clusterParameters').dbAddress, '\" \"', parameters('clusterParameters').dbUsername, '\" \"', parameters('clusterParameters').dbPassword, '\" \"', parameters('clusterParameters').masterType, '\" \"', parameters('clusterParameters').workerType, '\" \"', parameters('clusterParameters').edgeType, '\" \"', parameters('clusterParameters').dirUsername, '\" \"', parameters('clusterParameters').dirPassword, '\"')]"}
+          ]
+        },
+        "protectedSettings": {
+          "commandToExecute": "[concat('python prepare-director-conf.py --envName \"', parameters('clusterParameters').envName, '\" --region \"', parameters('clusterParameters').location, '\" --subId \"', parameters('clusterParameters').subId, '\" --tenantId \"', parameters('clusterParameters').tenantId, '\" --clientId \"', parameters('clusterParameters').clientId, '\" --clientSecret \"', parameters('clusterParameters').clientSecret, '\" --username \"', parameters('clusterParameters').adminUsername, '\" --keyFileName \"', mykey, '\" --networkSecurityGroupResourceGroup \"', parameters('clusterParameters').networkSecurityGroupResourceGroup, '\" --networkSecurityGroup \"', parameters('clusterParameters').networkSecurityGroup, '\" --virtualNetworkResourceGroup \"', parameters('clusterParameters').virtualNetworkResourceGroup, '\" --virtualNetwork \"', parameters('clusterParameters').virtualNetwork, '\" --subnetName \"', parameters('clusterParameters').subnetName, '\" --computeResourceGroup \"', parameters('clusterParameters').computeResourceGroup, '\" --hostFqdnSuffix \"', parameters('clusterParameters').hostFqdnSuffix, '\" --dbHostOrIP \"', parameters('clusterParameters').dbAddress, '\" --dbUsername \"', parameters('clusterParameters').dbUsername, '\" --dbPassword \"', parameters('clusterParameters').dbPassword, '\" --masterType \"', parameters('clusterParameters').masterType, '\" --workerType \"', parameters('clusterParameters').workerType, '\" --edgeType \"', parameters('clusterParameters').edgeType, '\"')]",
+          "Items": {
+            "clientSecret": "[parameters('clusterParameters').clientSecret]",
+            "dbPassword": "[parameters('clusterParameters').dbPassword]"
+          }
+        }
       }
     }
   ]

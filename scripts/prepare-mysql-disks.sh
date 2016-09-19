@@ -98,4 +98,4 @@ prepare_disk()
 END
 
 sudo bash -c "source ./inputs2.sh; prepare_unmounted_volumes"
-exit 0  # and this is useful
+exit 0
