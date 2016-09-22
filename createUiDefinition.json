@@ -7,7 +7,7 @@
                 "name": "username",
                 "type": "Microsoft.Compute.UserNameTextBox",
                 "label": "Linux Username",
-                "toolTip": "<a href=\"www.google.com/intl/en/policies/privacy/?fg=1\"> Privacy </a>",
+                "toolTip": "<a href=www.google.com/intl/en/policies/privacy/?fg=1> Privacy </a>",
                 "constraints": {
                     "required": true
                 },
