@@ -9,7 +9,9 @@
                 "label": "Username",
                 "toolTip": "Username for linux virtual machine",
                 "constraints": {
-                    "required": true
+                    "required": true,
+                    "regex": "^[a-z_][a-z0-9_-]{0,31}$",
+                    "validationMessage": "Should begin with letter. Only letters, numbers, and _-. are allowed. Length must between 1 and 32 characters."
                 },
                 "osPlatform": "Linux"
             },
